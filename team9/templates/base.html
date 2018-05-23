@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% if title %}
+    <title>
+        Home Page - {{title}}
+    </title>
+    {% else %}
+    <title>
+        Home Page - You Rack Discipline
+    </title>
+    {% endif %}
+</head>
+<body>
+    <div>Results: <a href="/index">Home</a> | <a href="/ranking">Ranking</a></div>
+    <hr>
+    {% block content %} {% endblock %}
+</body>
+</html>

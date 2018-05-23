@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1> Welcome Players to Amsterdam Team 9 - {{season.seasonname}}</h1>
+    {% for player in players %}
+    <div><p>{{player.FirstName}} {{player.Surname}} is Active : {{player.Active}}</p></div>
+    {% endfor %}
+{% endblock %}

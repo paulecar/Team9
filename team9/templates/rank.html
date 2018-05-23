@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1> Player Ranking - {{season.seasonname}}</h1>
+    <table>
+        <th>First Name</th>
+        <th>Surname</th>
+        <th>Played</th>
+        <th>Wins</th>
+        <th>Act Racks Won</th>
+        <th>Act Racks Lost</th>
+        <th>Act Racks Played</th>
+        <th>Racks Won</th>
+        <th>Racks Lost</th>
+        <th>Racks Played</th>
+        <th>Match Pct</th>
+        <th>Racks Pct</th>
+        <th>Act Pct</th>
+    {% for ranking in rankings %}
+        <tr>
+            <td>{{ranking[1]}}</td>
+            <td>{{ranking[2]}}</td>
+            <td>{{ranking[3]}}</td>
+            <td>{{ranking[4]}}</td>
+            <td>{{ranking[5]}}</td>
+            <td>{{ranking[6]}}</td>
+            <td>{{ranking[7]}}</td>
+            <td>{{ranking[8]}}</td>
+            <td>{{ranking[9]}}</td>
+            <td>{{ranking[10]}}</td>
+            <td>{{ranking[11]}}</td>
+            <td>{{ranking[12]}}</td>
+            <td>{{ranking[13]}}</td>
+        </tr>
+    {% endfor %}
+    </table>
+{% endblock %}
