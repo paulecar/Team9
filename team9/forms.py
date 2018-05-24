@@ -13,7 +13,9 @@ class LoginForm(FlaskForm):
 
 class AddMatch(FlaskForm):
     # TODO Dynamic pick list based on history
-    teampick = SelectField('Pick Team', choices=['Niners','I Rack, I Ran'], coerce=int)
+    teampick = SelectField('Pick Team', choices=[('1','Niners'), ('2','I Rack, I Ran')], coerce=int)
     opposingteam = StringField('Opposing Team', validators=[DataRequired])
-    matchdate = DateField('Match Date', validators=[DateField], default=datetime.today, format="%Y-%m-%dT")
+    # TODO Default match date with format
+    # matchdate = DateField('Match Date', validators=[DateField], default=datetime.date , format="%Y-%m-%dT")
+    matchdate = DateField('Match Date', validators=[DateField])
     submit = SubmitField('Create Match')
