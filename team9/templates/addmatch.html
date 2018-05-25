@@ -8,16 +8,26 @@
             {{ form.teampick.label }}
             <br>
             {{ form.teampick() }}
+            {% for error in form.teampick.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+
         </p>
         <p>
             {{ form.opposingteam.label }}
             <br>
             {{ form.opposingteam(size=45) }}
+            {% for error in form.opposingteam.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
         </p>
         <p>
             {{ form.matchdate.label }}
             <br>
             {{ form.matchdate() }}
+            {% for error in form.matchdate.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
         </p>
         <p>{{ form.submit() }}</p>
     </form>

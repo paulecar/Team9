@@ -26,7 +26,7 @@ def login():
     if form.validate_on_submit():
         flash('Login requested for user {}, remember_me={}'.format(form.username.data, form.remember.data))
         return redirect('/index')
-    return render_template('login.html', title='Make yourself known to me', form=form)
+    return render_template('login.html', title='Sign In', form=form)
 
 
 @team9.route('/addmatch', methods=['GET', 'POST'])
