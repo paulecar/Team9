@@ -2,6 +2,9 @@ from flask import Flask
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
 
+# TODO Introduce Bootstrap to tidy this bitch up
+# from flask_bootstrap import Bootstrap
+
 # Not manageing DB updates in the application, so this is not needed
 # from flask_migrate import Migrate
 
