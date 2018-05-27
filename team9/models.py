@@ -14,7 +14,11 @@ class Match(db.Model):
         return self.idmatch
 
 
-# TODO Introduce model for MathUp table
+class MatchUp(db.Model):
+    __table__ = db.Model.metadata.tables['MatchUp']
+
+    def __repr__(self):
+        return self.idmatchup
 
 
 class Season(db.Model):
@@ -24,11 +28,19 @@ class Season(db.Model):
         return self.SeasonName
 
 
-# TODO Introduce model for Result table
+class Result(db.Model):
+    __table__ = db.Model.metadata.tables['Result']
+
+    def __repr__(self):
+        return self.idresult
 
 # TODO Introduce model for 'HandicapRace' table
 
-# TODO Introduce model for Bog table
+class Bog(db.Model):
+    __table__ = db.Model.metadata.tables['Bog']
+
+    def __repr__(self):
+        return self.idbogentry
 
 
 # TODO Revisit relecting the views - problem was linked to the lack of a primary key

@@ -35,17 +35,20 @@ def addmatch():
     form = AddMatch()
     # Returns true on the POST when validation has passed
     if form.validate_on_submit():
-        flash('Adding new match on {}, against {}, where playoff is {}'.
-              format(form.matchdate.data, form.opposingteam.data, form.playoff.data))
         season = Season.query.filter_by(CurrentSeason='Y').first()
-        if form.playoff.data:
-            match = Match(OpposingTeam=form.opposingteam.data,
-                          MatchDate=form.matchdate.data, Season_ID=season.idseason, PlayOff='Y')
+        # If 'New Team' selected then use the form input field, otherwise the value from selected tuple
+        if form.teampick.data==0:
+            ot = form.opposingteam.data
         else:
-            match = Match(OpposingTeam=form.opposingteam.data,
-                          MatchDate=form.matchdate.data, Season_ID=season.idseason)
+            ot = form.teampick.choices[form.teampick.data][1]
+        if form.playoff.data:
+            match = Match(OpposingTeam=ot,MatchDate=form.matchdate.data, Season_ID=season.idseason, PlayOff='Y')
+        else:
+            match = Match(OpposingTeam=ot,MatchDate=form.matchdate.data, Season_ID=season.idseason)
         db.session.add(match)
         db.session.commit()
+        flash('Added new match on {}, against {}, where playoff is {}'.
+              format(form.matchdate.data, ot, form.playoff.data))
         return redirect(url_for('index'))
     # Renders on the GET of when the input does not validate
     return render_template('addmatch.html', title='Add Match', form=form)
