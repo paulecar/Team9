@@ -11,11 +11,18 @@ class Match(db.Model):
     __table__ = db.Model.metadata.tables['Match']
 
     def __repr__(self):
-        return self.idMatch
+        return self.idmatch
+
 
 # TODO Introduce model for MathUp table
 
-# TODO Introduce model for Season Table
+
+class Season(db.Model):
+    __table__ = db.Model.metadata.tables['Season']
+
+    def __repr__(self):
+        return self.SeasonName
+
 
 # TODO Introduce model for Result table
 

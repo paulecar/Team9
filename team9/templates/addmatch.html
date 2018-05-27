@@ -29,6 +29,7 @@
                 <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
+        <p>{{ form.playoff() }} {{ form.playoff.label }}</p>
         <p>{{ form.submit() }}</p>
     </form>
 {% endblock %}

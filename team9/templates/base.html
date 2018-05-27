@@ -14,10 +14,10 @@
 <body>
     <div>
         Navigate:
-        <a href="/index">Home</a> |
-        <a href="/login">Login</a> |
-        <a href="/addmatch">Add Match</a> |
-        <a href="/ranking">Rankings</a></div>
+        <a href="{{ url_for('index') }}">Home</a> |
+        <a href="{{ url_for('login') }}">Login</a> |
+        <a href="{{ url_for('addmatch') }}">Add Match</a> |
+        <a href="{{ url_for('ranking') }}">Rankings</a></div>
     <hr>
     {% with messages = get_flashed_messages() %}
         {% if messages %}
