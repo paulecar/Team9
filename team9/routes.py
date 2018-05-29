@@ -1,21 +1,29 @@
 from flask import render_template, flash, redirect, url_for
 from team9 import team9, db
-from team9.models import Player, Match, Season
-from team9.forms import LoginForm, AddMatch
+from team9.models import Player, Match, Season, MatchUp
+from team9.forms import LoginForm, AddMatch, AddMatchUp
+
 
 # TODO Split routes into separate views (MVC)
+
+
+# Get current season, which is used by the 'Add' forms
+season = Season.query.filter_by(CurrentSeason='Y').first()
+
 
 @team9.route('/')
 @team9.route('/index')
 def index():
+    # TODO Create a nicer splash page - Player list with most recent ranking
     season = {'seasonname' : 'Summer 2018'}
-    players = Player.query.filter_by(Active='Y')
+    players = Player.query.filter_by(Active='Y').order_by(Player.idplayer)
     return render_template('index.html', season=season, players=players)
 
 
 @team9.route('/ranking')
 def ranking():
     # TODO Make ranking table more dynamic - pick a season
+    # TODO Show all three ranking tables (sort order)
     season = {'seasonname' : 'Summer 2018'}
     rankings = db.session.execute("SELECT * FROM AmsterdamTeam9.player_ranking WHERE idseason = 8").fetchall()
     return render_template('rank.html', season=season, rankings=rankings)
@@ -23,9 +31,11 @@ def ranking():
 
 @team9.route('/login', methods=['GET', 'POST'])
 def login():
+    # TODO Enable user login page (defer registration for later)
     form = LoginForm()
     if form.validate_on_submit():
-        flash('Login requested for user {}, remember_me={}'.format(form.username.data, form.remember.data))
+        flash('Login requested for user {}, '
+              'remember_me={}'.format(form.username.data, form.remember.data))
         return redirect(url_for('index'))
     return render_template('login.html', title='Sign In', form=form)
 
@@ -33,22 +43,46 @@ def login():
 @team9.route('/addmatch', methods=['GET', 'POST'])
 def addmatch():
     form = AddMatch()
-    # Returns true on the POST when validation has passed
     if form.validate_on_submit():
-        season = Season.query.filter_by(CurrentSeason='Y').first()
-        # If 'New Team' selected then use the form input field, otherwise the value from selected tuple
+        # If 'New Team' selected then use the form input field,
+        # otherwise the value from selected tuple
         if form.teampick.data==0:
-            ot = form.opposingteam.data
+            team_entered = form.opposingteam.data
         else:
-            ot = form.teampick.choices[form.teampick.data][1]
+            team_entered = form.teampick.choices[form.teampick.data][1]
         if form.playoff.data:
-            match = Match(OpposingTeam=ot,MatchDate=form.matchdate.data, Season_ID=season.idseason, PlayOff='Y')
+            match = Match(OpposingTeam=team_entered,MatchDate=form.matchdate.data,
+                          Season_ID=season.idseason, PlayOff='Y')
         else:
-            match = Match(OpposingTeam=ot,MatchDate=form.matchdate.data, Season_ID=season.idseason)
+            match = Match(OpposingTeam=team_entered,MatchDate=form.matchdate.data,
+                          Season_ID=season.idseason)
         db.session.add(match)
         db.session.commit()
         flash('Added new match on {}, against {}, where playoff is {}'.
-              format(form.matchdate.data, ot, form.playoff.data))
+              format(form.matchdate.data, team_entered, form.playoff.data))
         return redirect(url_for('index'))
     # Renders on the GET of when the input does not validate
     return render_template('addmatch.html', title='Add Match', form=form)
+
+@team9.route('/addmatchup', methods=['GET', 'POST'])
+def addmatchup():
+    # Get the current Match
+    current_match = Match.query.order_by(Match.MatchDate.desc()).first()
+    form = AddMatchUp()
+    if form.validate_on_submit():
+        # If 'New Player' selected then use the form input field,
+        # otherwise the value from selected tuple
+        if form.opponentpick.data==0:
+            opponent_entered = form.opponentname.data
+        else:
+            opponent_entered = form.opponentpick.choices[form.opponentpick.data][1]
+        matchup = MatchUp(OpponentName=opponent_entered, OpponentRank=form.opponentrank.data,
+                          Player_ID=form.playerpick.data, MyPlayerRank=form.playerrank.data,
+                          Match_ID=1)
+        db.session.add(matchup)
+        db.session.commit()
+        flash('Added new match up : {} {} against {} {}'.
+              format(form.matchdate.data, opponent_entered, form.playoff.data))
+        return redirect(url_for('index'))
+    # Renders on the GET of when the input does not validate
+    return render_template('addmatchup.html', title='Add MatchUp', form=form, cm=current_match)
