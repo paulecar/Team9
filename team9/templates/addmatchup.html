@@ -62,6 +62,9 @@
                 <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
+        <p>
+            {{ form.mathematical_elimination() }} {{ form.mathematical_elimination.label }}
+        </p>
         <p>{{ form.submit() }}</p>
     </form>
 {% endblock %}

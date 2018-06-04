@@ -13,7 +13,7 @@ from team9 import db
 from team9.models import Match, MatchUp, Player
 
 from datetime import datetime
-from handicaps import hcaps
+from helper import hcaps, ranks
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -49,10 +49,14 @@ class AddMatch(FlaskForm):
 
 class AddMatchUp(FlaskForm):
     # Create pick lists
+    # Our team - active players
     player=[]
     playernames = Player.query.filter_by(Active='Y').order_by(Player.Surname).all()
     for playername in playernames:
         player.append((playername.idplayer, playername.Surname))
+
+
+    # Opposing team players - from match up history (no join to opposing team data)
     i=0
     opponent=[]
     opponent.append((0, 'New Opponent...'))
@@ -61,27 +65,26 @@ class AddMatchUp(FlaskForm):
     for opponentname in opponentnames:
         i=i+1
         opponent.append((i, opponentname.OpponentName))
+
+    # Racks to win - 0 thru 11 only
     i=0
     racks=[]
     while i < 12:
         racks.append((i,i))
         i = i + 1
+
+
     # Main from starts here
     playerpick = SelectField('Select Our Player',
                              choices=player, coerce=int)
-    # TODO Make player rank a pick list, or add validation
-    playerrank = StringField('Player Rank',
-                             validators=[Length(min=1, max=2,
-                                    message='Player Rank is 1 or 2 chars only')])
+    playerrank = SelectField('Select Player Rank', choices=ranks)
     opponentpick = SelectField('Select Opponent  or enter New Player',
                                choices=opponent, coerce=int)
     opponentname = StringField('Opponent')
-    opponentrank = StringField('Opponent Rank',
-                               validators=[DataRequired(),
-                               Length(min=1, max=2,
-                                      message='Player Rank is 1 or 2 chars only')])
+    opponentrank = SelectField('Select Opponent Rank', choices=ranks)
     playerscore = SelectField('Our Player Scores', choices=racks, coerce=int)
     opponentscore = SelectField('Opponent Scores', choices=racks, coerce=int)
+    mathematical_elimination = BooleanField('Mathematical elimination stops play')
     submit = SubmitField('Create Match')
 
 
@@ -95,15 +98,34 @@ class AddMatchUp(FlaskForm):
         try:
             race = hcaps[self.playerrank.data][self.opponentrank.data]
         except:
-            raise ValidationError('Ranks not set - cannot validate score')
+            raise ValidationError('Something went wrong with race lookup (player)?')
+
         if self.playerscore.data < race[0]:
             raise ValidationError('Player score appears to be less than racks given on the wire?')
+
+        if self.playerscore.data > race[1]:
+            raise ValidationError('Player score appears to be more than required number of racks')
+
+        # TODO Tidy up this validation to remove duplicate code
+        if self.opponentscore.data < race[1]\
+                and self.playerscore.data < race[1] \
+                and not self.mathematical_elimination.data:
+            raise ValidationError('One of the players must reach the target number of racks : ' + race[1].__str__())
+
 
     def validate_opponentscore(self, opponentscore):
         try:
             race = hcaps[self.playerrank.data][self.opponentrank.data]
         except:
-            raise ValidationError('Player score appears to be less than racks given on the wire?')
+            raise ValidationError('Something went wrong with race lookup (opponent)?')
+
         if self.opponentscore.data < (race[0] * -1):
             raise ValidationError('Opponent score appears to be less than racks given on the wire?')
 
+        if self.opponentscore.data > race[1]:
+            raise ValidationError('Opponent score appears to be more than required number of racks')
+
+        if self.opponentscore.data < race[1]\
+                and self.playerscore.data < race[1] \
+                and not self.mathematical_elimination.data:
+            raise ValidationError('One of the players must reach the target number of racks : ' + race[1].__str__())

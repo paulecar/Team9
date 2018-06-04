@@ -34,7 +34,6 @@ class Result(db.Model):
     def __repr__(self):
         return self.idresult
 
-# TODO Introduce model for 'HandicapRace' table
 
 class Bog(db.Model):
     __table__ = db.Model.metadata.tables['Bog']
@@ -43,7 +42,7 @@ class Bog(db.Model):
         return self.idbogentry
 
 
-# TODO Revisit relecting the views - problem was linked to the lack of a primary key
+# TODO Revisit reflecting the views - problem was linked to the lack of a primary key
 # class Rankings(db.Model):
 #    __table__ = db.Model.metadata.views['playerranking']
 #

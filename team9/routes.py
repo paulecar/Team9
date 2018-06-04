@@ -2,7 +2,7 @@ from flask import render_template, flash, redirect, url_for
 from team9 import team9, db
 from team9.models import Player, Match, Season, MatchUp
 from team9.forms import LoginForm, AddMatch, AddMatchUp
-from handicaps import hcaps
+from helper import hcaps
 
 
 # TODO Split routes into separate views (MVC)
