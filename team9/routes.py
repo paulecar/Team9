@@ -24,10 +24,18 @@ def index():
 @team9.route('/ranking')
 def ranking():
     # TODO Make ranking table more dynamic - pick a season
-    # TODO Show all three ranking tables (sort order)
     season = {'seasonname' : 'Summer 2018'}
-    rankings = db.session.execute("SELECT * FROM AmsterdamTeam9.player_ranking WHERE idseason = 8").fetchall()
-    return render_template('rank.html', season=season, rankings=rankings)
+    rankings_matchpct = db.session.execute\
+        ("SELECT * FROM AmsterdamTeam9.player_ranking WHERE idseason = 8 ORDER BY MatchPct Desc").fetchall()
+    rankings_rackspct = db.session.execute\
+        ("SELECT * FROM AmsterdamTeam9.player_ranking WHERE idseason = 8 ORDER BY RacksPct Desc").fetchall()
+    rankings_actpct = db.session.execute\
+        ("SELECT * FROM AmsterdamTeam9.player_ranking WHERE idseason = 8 ORDER BY ActPct Desc").fetchall()
+    return render_template('rank.html',
+                           season=season,
+                           rankings1=rankings_matchpct,
+                           rankings2=rankings_rackspct,
+                           rankings3=rankings_actpct)
 
 
 @team9.route('/login', methods=['GET', 'POST'])
