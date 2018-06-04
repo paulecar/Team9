@@ -2,6 +2,7 @@ from flask import render_template, flash, redirect, url_for
 from team9 import team9, db
 from team9.models import Player, Match, Season, MatchUp
 from team9.forms import LoginForm, AddMatch, AddMatchUp
+from handicaps import hcaps
 
 
 # TODO Split routes into separate views (MVC)
@@ -51,10 +52,13 @@ def addmatch():
         else:
             team_entered = form.teampick.choices[form.teampick.data][1]
         if form.playoff.data:
-            match = Match(OpposingTeam=team_entered,MatchDate=form.matchdate.data,
-                          Season_ID=season.idseason, PlayOff='Y')
+            match = Match(OpposingTeam=team_entered,
+                          MatchDate=form.matchdate.data,
+                          Season_ID=season.idseason,
+                          PlayOff='Y')
         else:
-            match = Match(OpposingTeam=team_entered,MatchDate=form.matchdate.data,
+            match = Match(OpposingTeam=team_entered,
+                          MatchDate=form.matchdate.data,
                           Season_ID=season.idseason)
         db.session.add(match)
         db.session.commit()
@@ -76,13 +80,33 @@ def addmatchup():
             opponent_entered = form.opponentname.data
         else:
             opponent_entered = form.opponentpick.choices[form.opponentpick.data][1]
-        matchup = MatchUp(OpponentName=opponent_entered, OpponentRank=form.opponentrank.data,
-                          Player_ID=form.playerpick.data, MyPlayerRank=form.playerrank.data,
-                          Match_ID=1)
+        race = hcaps[form.playerrank.data][form.opponentrank.data]
+        if race[0] < 0:
+            wire = 0
+            oppwire = race[0] * -1
+        else:
+            wire = race[0]
+            oppwire = 0
+        if form.playerscore.data > form.opponentscore.data:
+            result='W'
+        else:
+            result='L'
+        matchup = MatchUp(OpponentName=opponent_entered,
+                          MyPlayerRank=form.playerrank.data,
+                          OpponentRank=form.opponentrank.data,
+                          Player_ID=form.playerpick.data,
+                          MatchUpRace=race[1],
+                          MyPlayerWire=race[0],
+                          MyPlayerScore=form.playerscore.data,
+                          OpponentScore=form.opponentscore.data,
+                          Match_ID=current_match.idmatch,
+                          MyPlayerActual=form.playerscore.data - wire,
+                          OpponentActual=form.opponentscore.data - oppwire,
+                          WinLose=result)
         db.session.add(matchup)
         db.session.commit()
-        flash('Added new match up : {} {} against {} {}'.
-              format(form.matchdate.data, opponent_entered, form.playoff.data))
+        flash('Added new match up : Player ID {} {} against {} {}'.
+              format(form.playerpick.data, form.playerrank.data, opponent_entered, form.opponentrank.data))
         return redirect(url_for('index'))
     # Renders on the GET of when the input does not validate
     return render_template('addmatchup.html', title='Add MatchUp', form=form, cm=current_match)

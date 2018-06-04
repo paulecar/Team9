@@ -12,13 +12,20 @@
             {% for error in form.playerpick.errors %}
                 <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
-
         </p>
         <p>
             {{ form.playerrank.label }}
             <br>
             {{ form.playerrank() }}
             {% for error in form.playerrank.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.playerscore.label }}
+            <br>
+            {{ form.playerscore() }}
+            {% for error in form.playerscore.errors %}
                 <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
@@ -44,6 +51,14 @@
             <br>
             {{ form.opponentrank() }}
             {% for error in form.opponentrank.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.opponentscore.label }}
+            <br>
+            {{ form.opponentscore() }}
+            {% for error in form.opponentscore.errors %}
                 <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
