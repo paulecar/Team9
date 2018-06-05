@@ -1,8 +1,26 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1> Welcome Players to Amsterdam Team 9 - {{season.seasonname}}</h1>
-    {% for player in players %}
-    <div><p>{{player.FirstName}} {{player.Surname}} is Active : {{player.Active}}</p></div>
-    {% endfor %}
+    <h1> You Rack Discipline - Amsterdam Team 9 - {{season.seasonname}}</h1>
+    <h2> The Bog of Eternal Stench</h2>
+    <table title="Match Percentages">
+        <th>Surname</th>
+        <th>Lost On</th>
+        <th>Won On</th>
+        <th>Losses</th>
+        <th>Played</th>
+        <th>Bogged</th>
+        <th>Bogged On</th>
+        {% for player in players %}
+        <tr>
+            <td>{{player[2]}}</td>
+            <td>{{player[3]}}</td>
+            <td>{{player[4]}}</td>
+            <td>{{player[5]}}</td>
+            <td>{{player[6]}}</td>
+            <td>{{player[7]}}</td>
+            <td>{{player[8]}}</td>
+        </tr>
+        {% endfor %}
+    </table>
 {% endblock %}

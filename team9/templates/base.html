@@ -1,5 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
+<style>
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+    color: #000099;
+}
+
+td {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+tr:nth-child(even) {
+    background-color: #dddddd;
+}
+h1 {
+    text-align: center;
+    color: #000099;
+}
+
+h2 {
+    text-align: left;
+    color: #cc6600;
+}
+
+h3 {
+    text-align: right;
+}
+</style>
 <head>
     {% if title %}
     <title>
@@ -15,10 +52,10 @@
     <!-- TODO Enable admin only menu for me, but not for others -->
     <div>
         Navigate:
-        <a href="{{ url_for('index') }}">Home</a> |
+        <a href="{{ url_for('index') }}">The Bog</a> |
         <a href="{{ url_for('login') }}">Login</a> |
         <a href="{{ url_for('addmatch') }}">Add Match</a> |
-        <a href="{{ url_for('addmatchup') }}">Add MatchUp</a> |
+        <a href="{{ url_for('addmatchup') }}">Add Result</a> |
         <a href="{{ url_for('ranking') }}">Rankings</a></div>
     <hr>
     {% with messages = get_flashed_messages() %}

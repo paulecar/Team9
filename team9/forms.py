@@ -85,7 +85,7 @@ class AddMatchUp(FlaskForm):
     playerscore = SelectField('Our Player Scores', choices=racks, coerce=int)
     opponentscore = SelectField('Opponent Scores', choices=racks, coerce=int)
     mathematical_elimination = BooleanField('Mathematical elimination stops play')
-    submit = SubmitField('Create Match')
+    submit = SubmitField('Create Match Result')
 
 
     def validate_opponentname(self, opponentname):

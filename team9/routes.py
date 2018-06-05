@@ -5,7 +5,12 @@ from team9.forms import LoginForm, AddMatch, AddMatchUp
 from helper import hcaps
 
 
-# TODO Split routes into separate views (MVC)
+# TODO Refactor project structure - Split routes into separate views (MVC)
+
+
+# TODO Implement 'Result' process
+# TODO Add Season Selector Form
+# TODO Add Bog Manager Form
 
 
 # Get current season, which is used by the 'Add' forms
@@ -15,24 +20,24 @@ season = Season.query.filter_by(CurrentSeason='Y').first()
 @team9.route('/')
 @team9.route('/index')
 def index():
-    # TODO Create a nicer splash page - Player list with most recent ranking
-    season = {'seasonname' : 'Summer 2018'}
-    players = Player.query.filter_by(Active='Y').order_by(Player.idplayer)
-    return render_template('index.html', season=season, players=players)
+    # TODO Create a nicer splash page
+    # TODO Fix Bog joins so that players appear when they have no matches played
+    seasonname = {'seasonname' : season.SeasonName}
+    players =  db.session.execute("SELECT * FROM AmsterdamTeam9.the_bog").fetchall()
+    return render_template('index.html', season=seasonname, players=players)
 
 
 @team9.route('/ranking')
 def ranking():
-    # TODO Make ranking table more dynamic - pick a season
-    season = {'seasonname' : 'Summer 2018'}
+    seasonname = {'seasonname' : season.SeasonName}
     rankings_matchpct = db.session.execute\
-        ("SELECT * FROM AmsterdamTeam9.player_ranking WHERE idseason = 8 ORDER BY MatchPct Desc").fetchall()
+        ("SELECT * FROM AmsterdamTeam9.player_ranking WHERE idseason = {} ORDER BY MatchPct Desc".format(season.idseason)).fetchall()
     rankings_rackspct = db.session.execute\
-        ("SELECT * FROM AmsterdamTeam9.player_ranking WHERE idseason = 8 ORDER BY RacksPct Desc").fetchall()
+        ("SELECT * FROM AmsterdamTeam9.player_ranking WHERE idseason = {} ORDER BY RacksPct Desc".format(season.idseason)).fetchall()
     rankings_actpct = db.session.execute\
-        ("SELECT * FROM AmsterdamTeam9.player_ranking WHERE idseason = 8 ORDER BY ActPct Desc").fetchall()
+        ("SELECT * FROM AmsterdamTeam9.player_ranking WHERE idseason = {} ORDER BY ActPct Desc".format(season.idseason)).fetchall()
     return render_template('rank.html',
-                           season=season,
+                           season=seasonname,
                            rankings1=rankings_matchpct,
                            rankings2=rankings_rackspct,
                            rankings3=rankings_actpct)
