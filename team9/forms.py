@@ -44,7 +44,6 @@ class AddMatch(FlaskForm):
 
 
     def validate_opposingteam(self, opposingteam):
-        # TODO Is there a more elegant way to address this option
         # 0 means 'New team..'
         if self.teampick.data==0:
             if len(self.opposingteam.data)==0:

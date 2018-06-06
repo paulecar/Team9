@@ -46,7 +46,7 @@ def ranking():
 
 @team9.route('/login', methods=['GET', 'POST'])
 def login():
-    # TODO Enable user login page (defer registration for later)
+    # TODO Fix current user acces - e.g. username isn't available
     if current_user.is_authenticated:
         return redirect(url_for('index'))
     form = LoginForm()
