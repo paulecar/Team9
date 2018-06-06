@@ -1,6 +1,7 @@
 from flask import Flask
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
 
 # TODO Introduce Bootstrap to tidy this bitch up
 # from flask_bootstrap import Bootstrap
@@ -15,6 +16,7 @@ pymysql.install_as_MySQLdb()
 # Manage environment variables, etc.
 team9 = Flask(__name__)
 team9.config.from_object(Config)
+login = LoginManager(team9)
 
 # Create the DB engine object, which gives me access to the session later
 db = SQLAlchemy(team9)

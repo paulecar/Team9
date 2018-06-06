@@ -1,4 +1,6 @@
-from team9 import db
+from team9 import db, login
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import UserMixin
 
 class Player(db.Model):
     __table__ = db.Model.metadata.tables['Player']
@@ -35,11 +37,22 @@ class Result(db.Model):
         return self.idresult
 
 
-class Bog(db.Model):
-    __table__ = db.Model.metadata.tables['Bog']
+class User(UserMixin, db.Model):
+    __table__ = db.Model.metadata.tables['User']
 
     def __repr__(self):
-        return self.idbogentry
+        return self.iduser
+
+    def set_password(self, Password):
+        self.PasswordHash = generate_password_hash(Password)
+
+    def check_password(self, Password):
+        return check_password_hash(self.PasswordHash, Password)
+
+
+@login.user_loader
+def load_user(id):
+    return User.query.get(int(id))
 
 
 # TODO Revisit reflecting the views - problem was linked to the lack of a primary key

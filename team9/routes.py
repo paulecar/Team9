@@ -1,8 +1,9 @@
 from flask import render_template, flash, redirect, url_for
 from team9 import team9, db
-from team9.models import Player, Match, Season, MatchUp
-from team9.forms import LoginForm, AddMatch, AddMatchUp
+from team9.models import Player, Match, Season, MatchUp, User
+from team9.forms import LoginForm, AddMatch, AddMatchUp, RegistrationForm
 from helper import hcaps
+from flask_login import current_user, login_user, logout_user
 
 
 # TODO Refactor project structure - Split routes into separate views (MVC)
@@ -46,12 +47,37 @@ def ranking():
 @team9.route('/login', methods=['GET', 'POST'])
 def login():
     # TODO Enable user login page (defer registration for later)
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
-        flash('Login requested for user {}, '
-              'remember_me={}'.format(form.username.data, form.remember.data))
+        user = User.query.filter_by(UserName=form.username.data).first()
+        if user is None or not user.check_password(form.password.data):
+            flash('Invalid username or password')
+            return redirect(url_for('login'))
+        login_user(user, remember=form.remember.data)
         return redirect(url_for('index'))
     return render_template('login.html', title='Sign In', form=form)
+
+
+@team9.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+
+@team9.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = User(UserName=form.username.data, Email=form.email.data)
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash('Congratulations, you are now a registered user!')
+        return redirect(url_for('login'))
+    return render_template('register.html', title='Register', form=form)
 
 
 @team9.route('/addmatch', methods=['GET', 'POST'])

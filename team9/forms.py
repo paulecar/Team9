@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, DateField, SelectField, BooleanField, SubmitField
-from wtforms.validators import DataRequired, Email, ValidationError, InputRequired, Required, Length
+from wtforms.validators import DataRequired, Email, ValidationError, InputRequired, Required, EqualTo
+
 
 # TODO Session expiration so new team is immediately available in the pick list
 # I think there are multiple session objects,
@@ -10,10 +11,12 @@ from wtforms.validators import DataRequired, Email, ValidationError, InputRequir
 
 # Database Items
 from team9 import db
-from team9.models import Match, MatchUp, Player
+from team9.models import Match, MatchUp, Player, User
+
 
 from datetime import datetime
 from helper import hcaps, ranks
+
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -46,6 +49,7 @@ class AddMatch(FlaskForm):
         if self.teampick.data==0:
             if len(self.opposingteam.data)==0:
                 raise ValidationError('Select Opposing Team from list or Enter a team name in the text box.')
+
 
 class AddMatchUp(FlaskForm):
     # Create pick lists
@@ -129,3 +133,25 @@ class AddMatchUp(FlaskForm):
                 and self.playerscore.data < race[1] \
                 and not self.mathematical_elimination.data:
             raise ValidationError('One of the players must reach the target number of racks : ' + race[1].__str__())
+
+
+class RegistrationForm(FlaskForm):
+    # TODO Implement 2FA by sending verification email
+    username = StringField('Username', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    password2 = PasswordField(
+        'Repeat Password', validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('Register')
+
+
+    def validate_username(self, username):
+        user = User.query.filter_by(UserName=username.data).first()
+        if user is not None:
+            raise ValidationError('Username in use - Please use a different username.')
+
+
+    def validate_email(self, email):
+        user = User.query.filter_by(Email=email.data).first()
+        if user is not None:
+            raise ValidationError('Email in use - Please use a different email address.')
