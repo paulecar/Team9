@@ -70,8 +70,10 @@ a {
         {% else %}
             <a href="{{ url_for('logout') }}">Logout</a> |
         {% endif %}
-        <a href="{{ url_for('addmatch') }}">Add Match</a> |
-        <a href="{{ url_for('addmatchup') }}">Add Result</a> |
+        {% if current_user.UserRole == 'Admin' %}
+            <a href="{{ url_for('addmatch') }}">Add Match</a> |
+            <a href="{{ url_for('addmatchup') }}">Add Result</a> |
+        {% endif %}
         <a href="{{ url_for('ranking') }}">Rankings</a></div>
     <hr>
     {% with messages = get_flashed_messages() %}
