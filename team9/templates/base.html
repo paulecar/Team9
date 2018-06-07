@@ -60,7 +60,6 @@ a {
     {% endif %}
 </head>
 <body>
-    <!-- TODO Enable admin only menu for me, which requires current_user access -->
     <div>
         Navigate:
         <a href="{{ url_for('index') }}">The Bog</a> |
@@ -76,6 +75,7 @@ a {
         {% endif %}
         <a href="{{ url_for('ranking') }}">Rankings</a></div>
     <hr>
+    <!-- TODO Place flashed messages with red backgroud -->
     {% with messages = get_flashed_messages() %}
         {% if messages %}
         <ul>

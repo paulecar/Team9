@@ -21,7 +21,7 @@ season = Season.query.filter_by(CurrentSeason='Y').first()
 @team9.route('/')
 @team9.route('/index')
 def index():
-    # TODO Create a nicer splash page
+    # TODO Create a splash page and separte The Bog
     # TODO Fix Bog joins so that players appear when they have no matches played
     seasonname = {'seasonname' : season.SeasonName}
     players =  db.session.execute("SELECT * FROM AmsterdamTeam9.the_bog").fetchall()
@@ -46,7 +46,6 @@ def ranking():
 
 @team9.route('/login', methods=['GET', 'POST'])
 def login():
-    # TODO Fix current user acces - e.g. username isn't available
     if current_user.is_authenticated:
         return redirect(url_for('index'))
     form = LoginForm()
