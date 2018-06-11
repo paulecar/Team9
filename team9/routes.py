@@ -7,7 +7,6 @@ from flask_login import current_user, login_user, logout_user
 
 
 # TODO Refactor project structure - Split routes into separate views (MVC)
-
 # TODO Add Season Selector Form
 
 
@@ -22,7 +21,8 @@ def index():
     # TODO Fix Bog joins so that players appear when they have no matches played
     seasonname = {'seasonname' : season.SeasonName}
     players =  db.session.execute("SELECT * FROM AmsterdamTeam9.the_bog").fetchall()
-    return render_template('index.html', season=seasonname, players=players)
+    nextmatch = Match.query.order_by(Match.MatchDate.desc()).first()
+    return render_template('index.html', season=seasonname, players=players, nextmatch=nextmatch)
 
 
 @team9.route('/ranking')

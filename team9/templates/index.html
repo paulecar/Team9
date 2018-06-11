@@ -2,8 +2,9 @@
 
 {% block content %}
     <h1> You Rack Discipline - Amsterdam Team 9 - {{season.seasonname}} </h1>
-    <h1> User/Role: {{ current_user.UserName }} {{ current_user.UserRole }} </h1>
+    <h1> User/Role: {{ current_user.UserName }} / {{ current_user.UserRole }} </h1>
     <h2> The Bog of Eternal Stench</h2>
+    <h3> The next match is on {{nextmatch.MatchDate}} @ {{nextmatch.StartTime}} - we are playing "{{nextmatch.OpposingTeam}}"</h3>
     <table title="Match Percentages">
         <th>Surname</th>
         <th>Lost On</th>
