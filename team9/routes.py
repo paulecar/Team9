@@ -9,7 +9,6 @@ from flask_login import current_user, login_user, logout_user
 # TODO Refactor project structure - Split routes into separate views (MVC)
 
 # TODO Add Season Selector Form
-# TODO Add Bog Manager Form
 
 
 # Get current season, which is used by the 'Add' forms
@@ -90,11 +89,13 @@ def addmatch():
         if form.playoff.data:
             match = Match(OpposingTeam=team_entered,
                           MatchDate=form.matchdate.data,
+                          StartTime=form.starttime.data,
                           Season_ID=season.idseason,
                           PlayOff='Y')
         else:
             match = Match(OpposingTeam=team_entered,
                           MatchDate=form.matchdate.data,
+                          StartTime=form.starttime.data,
                           Season_ID=season.idseason)
         db.session.add(match)
         db.session.commit()

@@ -1,5 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, DateField, SelectField, BooleanField, SubmitField, RadioField
+from wtforms_components import TimeField
 from wtforms.validators import DataRequired, Email, ValidationError, InputRequired, Required, EqualTo
 
 
@@ -26,7 +27,6 @@ class LoginForm(FlaskForm):
 
 
 class AddMatch(FlaskForm):
-    # TODO Add match start time
     i=0
     picks=[]
     picks.append((0,'New Team..'))
@@ -37,9 +37,10 @@ class AddMatch(FlaskForm):
         picks.append((i,team.OpposingTeam))
     teampick = SelectField('Pick Team', choices=picks, coerce=int)
     opposingteam = StringField('Opposing Team')
-    playoff = BooleanField('Playoff Match')
+    playoff = BooleanField('Playoff Match', default=False)
     # TODO Revisit 'flask-moment' extension from 'Dates and Times' section
-    matchdate = DateField('Match Date', validators=[DateField], default=datetime.today() , format="%Y-%m-%d")
+    matchdate = DateField('Match Date', validators=[DateField], default=datetime.today(), format="%Y-%m-%d")
+    starttime = TimeField('Start Time', validators=[TimeField])
     submit = SubmitField('Create Match')
 
 

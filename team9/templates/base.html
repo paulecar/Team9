@@ -44,6 +44,11 @@ div {
     color : white;
 }
 
+ul {
+    background-color: lightgreen;
+    color : black;
+}
+
 a {
     color : white;
 }
@@ -76,7 +81,6 @@ a {
         {% endif %}
         <a href="{{ url_for('ranking') }}">Rankings</a></div>
     <hr>
-    <!-- TODO Place flashed messages with red backgroud -->
     {% with messages = get_flashed_messages() %}
         {% if messages %}
         <ul>

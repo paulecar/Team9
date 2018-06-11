@@ -29,6 +29,14 @@
                 <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
+        <p>
+            {{ form.starttime.label }}
+            <br>
+            {{ form.starttime() }}
+            {% for error in form.starttime.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
         <p>{{ form.playoff() }} {{ form.playoff.label }}</p>
         <p>{{ form.submit() }}</p>
     </form>
