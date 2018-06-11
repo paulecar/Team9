@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, DateField, SelectField, BooleanField, SubmitField
+from wtforms import StringField, PasswordField, DateField, SelectField, BooleanField, SubmitField, RadioField
 from wtforms.validators import DataRequired, Email, ValidationError, InputRequired, Required, EqualTo
 
 
@@ -20,7 +20,7 @@ from helper import hcaps, ranks
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
-    password = StringField('Password', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
     remember = BooleanField('Remember Me')
     submit = SubmitField('Sign In')
 
@@ -154,3 +154,19 @@ class RegistrationForm(FlaskForm):
         user = User.query.filter_by(Email=email.data).first()
         if user is not None:
             raise ValidationError('Email in use - Please use a different email address.')
+
+
+class BogMan(FlaskForm):
+    # Create pick lists
+    # Our team - active players
+    player=[]
+    playernames = Player.query.filter_by(Active='Y').order_by(Player.Surname).all()
+    for playername in playernames:
+        player.append((playername.idplayer, playername.Surname))
+
+    playerpick = SelectField('Select Player',
+                             choices=player, coerce=int)
+    bogged = RadioField('Bogged?', choices=[('Y', 'Bogged'), ('N', 'Not Bogged')], default='Y')
+    bogdate = DateField('Bogged Date', validators=[DateField], default=datetime.today() , format="%Y-%m-%d")
+    submit = SubmitField('Update Bog')
+

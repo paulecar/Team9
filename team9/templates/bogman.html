@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Manage The Bog</h1>
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        <div><p>Pick Player and select new values for 'The Bog'</p></div>
+        <p>
+            {{ form.playerpick.label }}
+            <br>
+            {{ form.playerpick() }}
+            {% for error in form.playerpick.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.bogged.label }}
+            <br>
+            {{ form.bogged() }}
+            {% for error in form.bogged.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.bogdate.label }}
+            <br>
+            {{ form.bogdate() }}
+            {% for error in form.bogdate.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>{{ form.submit() }}</p>
+    </form>
+{% endblock %}

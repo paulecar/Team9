@@ -1,15 +1,13 @@
 from flask import render_template, flash, redirect, url_for
 from team9 import team9, db
 from team9.models import Player, Match, Season, MatchUp, User
-from team9.forms import LoginForm, AddMatch, AddMatchUp, RegistrationForm
+from team9.forms import LoginForm, AddMatch, AddMatchUp, RegistrationForm, BogMan
 from helper import hcaps
 from flask_login import current_user, login_user, logout_user
 
 
 # TODO Refactor project structure - Split routes into separate views (MVC)
 
-
-# TODO Implement 'Result' process
 # TODO Add Season Selector Form
 # TODO Add Bog Manager Form
 
@@ -21,7 +19,7 @@ season = Season.query.filter_by(CurrentSeason='Y').first()
 @team9.route('/')
 @team9.route('/index')
 def index():
-    # TODO Create a splash page and separte The Bog
+    # TODO Create a splash page and separate from The Bog
     # TODO Fix Bog joins so that players appear when they have no matches played
     seasonname = {'seasonname' : season.SeasonName}
     players =  db.session.execute("SELECT * FROM AmsterdamTeam9.the_bog").fetchall()
@@ -106,6 +104,7 @@ def addmatch():
     # Renders on the GET of when the input does not validate
     return render_template('addmatch.html', title='Add Match', form=form)
 
+
 @team9.route('/addmatchup', methods=['GET', 'POST'])
 def addmatchup():
     # Get the current Match
@@ -148,3 +147,17 @@ def addmatchup():
         return redirect(url_for('index'))
     # Renders on the GET of when the input does not validate
     return render_template('addmatchup.html', title='Add MatchUp', form=form, cm=current_match)
+
+@team9.route('/bogman', methods=['GET', 'POST'])
+def bogman():
+    form = BogMan()
+    if form.validate_on_submit():
+        player = Player.query.filter_by(idplayer=form.playerpick.data).first()
+        player.Bogged = form.bogged.data
+        player.BoggedDate = form.bogdate.data
+        db.session.commit()
+        flash('Bogged data amended for Player {}, Bogged {}'.format(form.playerpick.data, form.bogged.data))
+        return redirect(url_for('index'))
+    # Renders on the GET of when the input does not validate
+    return render_template('bogman.html', title='Bog Manager', form=form)
+
