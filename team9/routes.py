@@ -108,8 +108,6 @@ def addmatch():
 
 @team9.route('/addmatchup', methods=['GET', 'POST'])
 def addmatchup():
-    # Get the current Match
-    current_match = Match.query.order_by(Match.MatchDate.desc()).first()
     form = AddMatchUp()
     if form.validate_on_submit():
         # If 'New Player' selected then use the form input field,
@@ -137,7 +135,7 @@ def addmatchup():
                           MyPlayerWire=race[0],
                           MyPlayerScore=form.playerscore.data,
                           OpponentScore=form.opponentscore.data,
-                          Match_ID=current_match.idmatch,
+                          Match_ID=form.matchpick.data,
                           MyPlayerActual=form.playerscore.data - wire,
                           OpponentActual=form.opponentscore.data - oppwire,
                           WinLose=result)
@@ -147,7 +145,7 @@ def addmatchup():
               format(form.playerpick.data, form.playerrank.data, opponent_entered, form.opponentrank.data))
         return redirect(url_for('index'))
     # Renders on the GET of when the input does not validate
-    return render_template('addmatchup.html', title='Add MatchUp', form=form, cm=current_match)
+    return render_template('addmatchup.html', title='Add MatchUp', form=form)
 
 @team9.route('/bogman', methods=['GET', 'POST'])
 def bogman():

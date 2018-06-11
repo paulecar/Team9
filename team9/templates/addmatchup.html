@@ -4,7 +4,14 @@
     <h1>Create A New Match Up</h1>
     <form action="" method="post">
         {{ form.hidden_tag() }}
-        <div><p>For Match against {{cm.OpposingTeam}} on {{cm.MatchDate}}</p></div>
+        <p>
+            {{ form.matchpick.label }}
+            <br>
+            {{ form.matchpick() }}
+            {% for error in form.matchpick.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
         <p>
             {{ form.playerpick.label }}
             <br>

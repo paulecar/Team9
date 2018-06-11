@@ -12,7 +12,7 @@ from wtforms.validators import DataRequired, Email, ValidationError, InputRequir
 
 # Database Items
 from team9 import db
-from team9.models import Match, MatchUp, Player, User
+from team9.models import Match, MatchUp, Player, User, Season
 
 
 from datetime import datetime
@@ -52,7 +52,14 @@ class AddMatch(FlaskForm):
 
 
 class AddMatchUp(FlaskForm):
-    # Create pick lists
+    # Matches from the current season
+    season = Season.query.filter_by(CurrentSeason='Y').first()
+    match=[]
+    matches = Match.query.filter_by(Season_ID=season.idseason).order_by(Match.MatchDate.desc()).all()
+    for m in matches:
+        match.append((m.idmatch, m.MatchDate))
+
+
     # Our team - active players
     player=[]
     playernames = Player.query.filter_by(Active='Y').order_by(Player.Surname).all()
@@ -79,6 +86,7 @@ class AddMatchUp(FlaskForm):
 
 
     # Main from starts here
+    matchpick = SelectField('Select Match', choices=match, coerce=int)
     playerpick = SelectField('Select Our Player',
                              choices=player, coerce=int)
     playerrank = SelectField('Select Player Rank', choices=ranks)
