@@ -2,6 +2,7 @@ from flask import Flask
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_mail import Mail
 
 # TODO Revisit Bootstrap instead of CSS
 # from flask_bootstrap import Bootstrap
@@ -17,6 +18,7 @@ pymysql.install_as_MySQLdb()
 team9 = Flask(__name__)
 team9.config.from_object(Config)
 login = LoginManager(team9)
+mail = Mail(team9)
 
 # Create the DB engine object, which gives me access to the session later
 db = SQLAlchemy(team9)
@@ -27,3 +29,4 @@ db.Model.metadata.reflect(db.engine, views=True)
 # migrate = Migrate(team9, db)
 
 from team9 import routes, models
+

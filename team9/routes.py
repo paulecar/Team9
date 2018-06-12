@@ -1,5 +1,5 @@
 from flask import render_template, flash, redirect, url_for
-from team9 import team9, db
+from team9 import team9, db, email
 from team9.models import Player, Match, Season, MatchUp, User
 from team9.forms import LoginForm, AddMatch, AddMatchUp, RegistrationForm, BogMan
 from helper import hcaps
@@ -19,6 +19,8 @@ season = Season.query.filter_by(CurrentSeason='Y').first()
 def index():
     # TODO Create a splash page and separate from The Bog
     # TODO Fix Bog joins so that players appear when they have no matches played
+    # TODO Revisit use of email - this is currently working
+    #email.send_email('YRD', 'yourackdiscipline@gmail.com', ['paulecar@mac.com'], 'Hello', '<h1>HTML body</h1>')
     seasonname = {'seasonname' : season.SeasonName}
     players =  db.session.execute("SELECT * FROM AmsterdamTeam9.the_bog").fetchall()
     nextmatch = Match.query.order_by(Match.MatchDate.desc()).first()
