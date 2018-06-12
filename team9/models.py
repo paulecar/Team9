@@ -41,7 +41,7 @@ class User(UserMixin, db.Model):
     __table__ = db.Model.metadata.tables['User']
 
     def __repr__(self):
-        return self.iduser
+        return self.UserName
 
     def set_password(self, Password):
         self.PasswordHash = generate_password_hash(Password)

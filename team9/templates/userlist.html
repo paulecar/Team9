@@ -8,16 +8,16 @@
         <th>Conf Code</th>
         <th>Verified</th>
         <th>User Role</th>
-        <th>Player Id</th>
+        <th>Player Name</th>
     {% for user in userlist %}
         <tr>
-            <td>{{user.id}}</td>
-            <td>{{user.UserName}}</td>
-            <td>{{user.Email}}</td>
-            <td>{{user.ConfCode}}</td>
-            <td>{{user.Verified}}</td>
-            <td>{{user.UserRole}}</td>
-            <td>{{user.Player_ID}}</td>
+            <td>{{user[1]}}</td>
+            <td>{{user[2]}}</td>
+            <td>{{user[3]}}</td>
+            <td>{{user[4]}}</td>
+            <td>{{user[5]}}</td>
+            <td>{{user[6]}}</td>
+            <td>{{user[7]}} {{user[8]}}</td>
         </tr>
     {% endfor %}
     </table>
