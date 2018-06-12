@@ -3,7 +3,7 @@ from team9 import team9, db, email
 from team9.models import Player, Match, Season, MatchUp, User
 from team9.forms import LoginForm, AddMatch, AddMatchUp, RegistrationForm, BogMan
 from helper import hcaps
-from flask_login import current_user, login_user, logout_user
+from flask_login import current_user, login_user, logout_user, login_required
 
 
 # TODO Refactor project structure - Split routes into separate views (MVC)
@@ -19,7 +19,7 @@ season = Season.query.filter_by(CurrentSeason='Y').first()
 def index():
     # TODO Create a splash page and separate from The Bog
     # TODO Fix Bog joins so that players appear when they have no matches played
-    # TODO Revisit use of email - this is currently working
+    # TODO Revisit use of email - this is currently working as is - use for registration and weekly announcements
     #email.send_email('YRD', 'yourackdiscipline@gmail.com', ['paulecar@mac.com'], 'Hello', '<h1>HTML body</h1>')
     seasonname = {'seasonname' : season.SeasonName}
     players =  db.session.execute("SELECT * FROM AmsterdamTeam9.the_bog").fetchall()
@@ -41,6 +41,15 @@ def ranking():
                            rankings1=rankings_matchpct,
                            rankings2=rankings_rackspct,
                            rankings3=rankings_actpct)
+
+
+@team9.route('/history')
+@login_required
+def history():
+    player = Player.query.filter_by(idplayer=current_user.Player_ID).first()
+    player_history = db.session.execute\
+        ("SELECT * FROM AmsterdamTeam9.player_history WHERE idplayer = {}".format(current_user.Player_ID)).fetchall()
+    return render_template('history.html', history=player_history, player=player)
 
 
 @team9.route('/login', methods=['GET', 'POST'])

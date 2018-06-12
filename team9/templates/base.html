@@ -73,6 +73,7 @@ a {
             <a href="{{ url_for('register') }}">Register New User</a> |
         {% else %}
             <a href="{{ url_for('logout') }}">Logout</a> |
+            <a href="{{ url_for('history') }}">History</a> |
         {% endif %}
         {% if current_user.UserRole == 'Admin' %}
             <a href="{{ url_for('addmatch') }}">Add Match</a> |
