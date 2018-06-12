@@ -4,7 +4,7 @@ from wtforms_components import TimeField
 from wtforms.validators import DataRequired, Email, ValidationError, InputRequired, Required, EqualTo
 
 
-# TODO Session expiration so new team is immediately available in the pick list
+# TODO Session expiration so new team and new match date are immediately available in the pick list for addmatch
 # I think there are multiple session objects,
 # so I need a sessionmaker in __init__.py
 # Docs at http://docs.sqlalchemy.org/en/latest/orm/session_state_management.html
@@ -57,14 +57,15 @@ class AddMatchUp(FlaskForm):
     match=[]
     matches = Match.query.filter_by(Season_ID=season.idseason).order_by(Match.MatchDate.desc()).all()
     for m in matches:
-        match.append((m.idmatch, m.MatchDate))
+        desc = m.OpposingTeam + ' on ' + str(m.MatchDate)
+        match.append((m.idmatch, desc))
 
 
     # Our team - active players
     player=[]
     playernames = Player.query.filter_by(Active='Y').order_by(Player.Surname).all()
     for playername in playernames:
-        player.append((playername.idplayer, playername.Surname))
+        player.append((playername.idplayer, playername.FirstName + ' ' + playername.Surname))
 
 
     # Opposing team players - from match up history (no join to opposing team data)
@@ -171,7 +172,7 @@ class BogMan(FlaskForm):
     player=[]
     playernames = Player.query.filter_by(Active='Y').order_by(Player.Surname).all()
     for playername in playernames:
-        player.append((playername.idplayer, playername.Surname))
+        player.append((playername.idplayer, playername.FirstName + ' ' + playername.Surname))
 
     playerpick = SelectField('Select Player',
                              choices=player, coerce=int)
