@@ -88,7 +88,10 @@ def register():
 
 
 @team9.route('/addmatch', methods=['GET', 'POST'])
+@login_required
 def addmatch():
+    if current_user.UserRole != 'Admin':
+        return redirect(url_for('index'))
     form = AddMatch()
     if form.validate_on_submit():
         # If 'New Team' selected then use the form input field,
@@ -118,7 +121,10 @@ def addmatch():
 
 
 @team9.route('/addmatchup', methods=['GET', 'POST'])
+@login_required
 def addmatchup():
+    if current_user.UserRole != 'Admin':
+        return redirect(url_for('index'))
     form = AddMatchUp()
     if form.validate_on_submit():
         # If 'New Player' selected then use the form input field,
@@ -159,7 +165,10 @@ def addmatchup():
     return render_template('addmatchup.html', title='Add MatchUp', form=form)
 
 @team9.route('/bogman', methods=['GET', 'POST'])
+@login_required
 def bogman():
+    if current_user.UserRole != 'Admin':
+        return redirect(url_for('index'))
     form = BogMan()
     if form.validate_on_submit():
         player = Player.query.filter_by(idplayer=form.playerpick.data).first()
