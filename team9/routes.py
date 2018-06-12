@@ -1,7 +1,7 @@
 from flask import render_template, flash, redirect, url_for
 from team9 import team9, db, email
 from team9.models import Player, Match, Season, MatchUp, User
-from team9.forms import LoginForm, AddMatch, AddMatchUp, RegistrationForm, BogMan
+from team9.forms import LoginForm, AddMatch, AddMatchUp, RegistrationForm, BogMan, UserMan
 from helper import hcaps
 from flask_login import current_user, login_user, logout_user, login_required
 
@@ -52,6 +52,15 @@ def history():
     return render_template('history.html', history=player_history, player=player)
 
 
+@team9.route('/userlist')
+@login_required
+def userlist():
+    if current_user.UserRole != 'Admin':
+        return redirect(url_for('index'))
+    users = User.query.order_by(User.UserName).all()
+    return render_template('userlist.html', userlist=users)
+
+
 @team9.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
@@ -71,6 +80,7 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('index'))
+
 
 @team9.route('/register', methods=['GET', 'POST'])
 def register():
@@ -164,6 +174,7 @@ def addmatchup():
     # Renders on the GET of when the input does not validate
     return render_template('addmatchup.html', title='Add MatchUp', form=form)
 
+
 @team9.route('/bogman', methods=['GET', 'POST'])
 @login_required
 def bogman():
@@ -179,4 +190,20 @@ def bogman():
         return redirect(url_for('index'))
     # Renders on the GET of when the input does not validate
     return render_template('bogman.html', title='Bog Manager', form=form)
+
+
+@team9.route('/userman', methods=['GET', 'POST'])
+@login_required
+def userman():
+    if current_user.UserRole != 'Admin':
+        return redirect(url_for('index'))
+    form = UserMan()
+    if form.validate_on_submit():
+        user = User.query.filter_by(id=form.userpick.data).first()
+        user.Player_ID = form.playerpick.data
+        db.session.commit()
+        flash('Player ID set for User {}, Player {}'.format(form.userpick.data, form.playerpick.data))
+        return redirect(url_for('index'))
+    # Renders on the GET of when the input does not validate
+    return render_template('userman.html', title='User Manager', form=form)
 

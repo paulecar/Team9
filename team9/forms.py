@@ -180,3 +180,21 @@ class BogMan(FlaskForm):
     bogdate = DateField('Bogged Date', validators=[DateField], default=datetime.today() , format="%Y-%m-%d")
     submit = SubmitField('Update Bog')
 
+
+class UserMan(FlaskForm):
+    # Create pick lists
+    # Our team - active players
+    player=[]
+    playernames = Player.query.filter_by(Active='Y').order_by(Player.Surname).all()
+    for playername in playernames:
+        player.append((playername.idplayer, playername.FirstName + ' ' + playername.Surname))
+
+    # Active Users
+    user = []
+    users = User.query.order_by(User.UserName).all()
+    for userid in users:
+        user.append((userid.id, userid.UserName + ' ' + userid.Email))
+
+    playerpick = SelectField('Select Player', choices=player, coerce=int)
+    userpick = SelectField('Select User', choices=user, coerce=int)
+    submit = SubmitField('Update User')
