@@ -24,7 +24,7 @@
             {% else %}
                 <td>L</td>
             {% endif %}
-            <td><a class="tab" href="{{ url_for('matchresult', matchid=match.Match.idmatch) }}">Match Detail</a></td>
+            <td><a class="tab" title="show individual games" href="{{ url_for('matchresult', matchid=match.Match.idmatch) }}">Match Detail</a></td>
         </tr>
         {% endfor %}
     </table>
