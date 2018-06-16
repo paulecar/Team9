@@ -68,15 +68,8 @@ class AddMatchUp(FlaskForm):
         player.append((playername.idplayer, playername.FirstName + ' ' + playername.Surname))
 
 
-    # Opposing team players - from match up history (no join to opposing team data)
-    i=0
     opponent=[]
     opponent.append((0, 'New Opponent...'))
-    opponentnames = db.session.query(MatchUp.OpponentName).group_by(MatchUp.OpponentName).\
-        order_by(MatchUp.OpponentName).all()
-    for opponentname in opponentnames:
-        i=i+1
-        opponent.append((i, opponentname.OpponentName))
 
     # Racks to win - 0 thru 11 only
     i=0

@@ -18,6 +18,7 @@
             <td>{{match.Result.MatchUpsLost}}</td>
             <td>{{match.Result.RacksWon}}</td>
             <td>{{match.Result.RacksLost}}</td>
+            <!-- TODO Because the trigger assigns 0 until all matchups are entered incomplete results show as a loss -->
             {% if match.Result.DidWeWin == 1 %}
                 <td>W</td>
             {% else %}

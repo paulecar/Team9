@@ -53,7 +53,7 @@ def history():
 @team9.route('/results')
 @login_required
 def results():
-    season_history = db.session.query(Result, Match).join(Match, Result.Match_ID == Match.idmatch).filter_by(Season_ID=9).all()
+    season_history = db.session.query(Result, Match).join(Match, Result.Match_ID == Match.idmatch).filter_by(Season_ID=9).order_by(Match.MatchDate.desc()).all()
     return render_template('season.html', history=season_history, season=season)
 
 
@@ -148,6 +148,16 @@ def addmatchup():
     if current_user.UserRole != 'Admin':
         return redirect(url_for('index'))
     form = AddMatchUp()
+    # Opposing team players - from match up history (no join to opposing team data)
+    i=0
+    opponent=[]
+    opponent.append((0, 'New Opponent...'))
+    opponentnames = db.session.query(MatchUp.OpponentName).group_by(MatchUp.OpponentName).\
+        order_by(MatchUp.OpponentName).all()
+    for opponentname in opponentnames:
+        i=i+1
+        opponent.append((i, opponentname.OpponentName))
+    form.opponentpick.choices=opponent
     if form.validate_on_submit():
         # If 'New Player' selected then use the form input field,
         # otherwise the value from selected tuple
