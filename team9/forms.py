@@ -3,18 +3,12 @@ from wtforms import StringField, PasswordField, DateField, SelectField, BooleanF
 from wtforms_components import TimeField
 from wtforms.validators import DataRequired, Email, ValidationError, InputRequired, Required, EqualTo
 
-
-# TODO Session expiration so new team and new match date are immediately available in the pick list for addmatch
-# I think there are multiple session objects,
-# so I need a sessionmaker in __init__.py
-# Docs at http://docs.sqlalchemy.org/en/latest/orm/session_state_management.html
-
-
+# TODO Move database lookups out of forms.py and into routes.py to makes sure commits are honored
 # Database Items
 from team9 import db
 from team9.models import Match, MatchUp, Player, User, Season
 
-
+# Helpers
 from datetime import datetime
 from helper import hcaps, ranks
 
@@ -170,6 +164,8 @@ class BogMan(FlaskForm):
     playerpick = SelectField('Select Player',
                              choices=player, coerce=int)
     bogged = RadioField('Bogged?', choices=[('Y', 'Bogged'), ('N', 'Not Bogged')], default='Y')
+    change = RadioField('Change Bog Date?', choices=[('Y', 'Yes'), ('N', 'No')], default='Y')
+
     bogdate = DateField('Bogged Date', validators=[DateField], default=datetime.today() , format="%Y-%m-%d")
     submit = SubmitField('Update Bog')
 

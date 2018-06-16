@@ -220,7 +220,8 @@ def bogman():
     if form.validate_on_submit():
         player = Player.query.filter_by(idplayer=form.playerpick.data).first()
         player.Bogged = form.bogged.data
-        player.BoggedDate = form.bogdate.data
+        if form.change.data == 'Y':
+            player.BoggedDate = form.bogdate.data
         db.session.commit()
         flash('Bogged data amended for Player {}, Bogged {}'.format(form.playerpick.data, form.bogged.data))
         return redirect(url_for('index'))

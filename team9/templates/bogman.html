@@ -22,6 +22,14 @@
             {% endfor %}
         </p>
         <p>
+            {{ form.change.label }}
+            <br>
+            {{ form.change() }}
+            {% for error in form.change.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
             {{ form.bogdate.label }}
             <br>
             {{ form.bogdate() }}
