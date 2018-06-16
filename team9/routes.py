@@ -184,7 +184,21 @@ def addmatchup():
               format(form.playerpick.data, form.playerrank.data, opponent_entered, form.opponentrank.data))
         return redirect(url_for('index'))
     # Renders on the GET of when the input does not validate
-    return render_template('addmatchup.html', title='Add MatchUp', form=form)
+    return render_template('addmatchup.html', title='Add Result', form=form, action='Create a New')
+
+
+@team9.route('/deletematchup/<matchupid>/<matchid>', methods=['GET', 'POST'])
+@login_required
+def deletematchup(matchupid, matchid):
+    if current_user.UserRole != 'Admin':
+        return redirect(url_for('index'))
+
+    MatchUp.query.filter_by(idmatchup=matchupid).delete()
+    # TODO Revisit - deleting always requires an add to rebuild the result table
+    Result.query.filter_by(Match_ID=matchid).delete()
+    db.session.commit()
+    flash('Match result deleted - add a new match up to rebuild results correctly')
+    return redirect(url_for('index'))
 
 
 @team9.route('/bogman', methods=['GET', 'POST'])

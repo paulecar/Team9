@@ -9,6 +9,7 @@
         <th>Opp Rank</th>
         <th>Score</th>
         <th>WinLose</th>
+        <th>Action</th>
         {% for result in results %}
         <tr>
             <td>{{result.Player.FirstName}} {{result.Player.Surname}}</td>
@@ -17,6 +18,7 @@
             <td>{{result.MatchUp.OpponentRank}}</td>
             <td>{{result.MatchUp.MyPlayerScore}} : {{result.MatchUp.OpponentScore}}</td>
             <td>{{result.MatchUp.WinLose}}</td>
+            <td><a class="tab" href="{{ url_for('deletematchup', matchupid=result.MatchUp.idmatchup, matchid=result.Match.idmatch) }}">Delete</a></td>
         </tr>
         {% endfor %}
     </table>
