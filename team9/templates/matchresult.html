@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1> Match Results </h1>
+    <h2>{{results[0].Match.MatchDate}} versus '{{results[0].Match.OpposingTeam}}'</h2>
+    <table title="Results">
+        <th>Player</th>
+        <th>Rank</th>
+        <th>Opponent</th>
+        <th>Opp Rank</th>
+        <th>Score</th>
+        <th>WinLose</th>
+        {% for result in results %}
+        <tr>
+            <td>{{result.Player.FirstName}} {{result.Player.Surname}}</td>
+            <td>{{result.MatchUp.MyPlayerRank}}</td>
+            <td>{{result.MatchUp.OpponentName}}</td>
+            <td>{{result.MatchUp.OpponentRank}}</td>
+            <td>{{result.MatchUp.MyPlayerScore}} : {{result.MatchUp.OpponentScore}}</td>
+            <td>{{result.MatchUp.WinLose}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

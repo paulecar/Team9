@@ -9,9 +9,6 @@ from flask_login import current_user, login_user, logout_user, login_required
 # TODO Refactor project structure - Split routes into separate views (MVC)
 # TODO Add Season Selector Form
 
-# MatchUp.query.join(Player, Player.idplayer == MatchUp.Player_ID).join(Match, Match.idmatch == MatchUp.Match_ID).add_columns(MatchUp.idmatchup, Match.idmatch, Player.idplayer, MatchUp.Match_ID, MatchUp.Player_ID, Player.Surname, Match.OpposingTeam, MatchUp.OpponentName).filter_by(idmatch=148).all()
-# Result.query.join(Match, Result.Match_ID == Match.idmatch).add_columns(Match.MatchDate, Match.OpposingTeam).filter_by(idmatch=148).all()
-# Result.query.join(Match, Result.Match_ID == Match.idmatch).add_columns(Match.MatchDate, Match.OpposingTeam).filter_by(Season_ID=9).all()
 
 # Get current season, which is used by the 'Add' forms
 season = Season.query.filter_by(CurrentSeason='Y').first()
@@ -53,11 +50,18 @@ def history():
     return render_template('history.html', history=player_history, player=player)
 
 
-@team9.route('/seasonh')
+@team9.route('/results')
 @login_required
-def seasonh():
+def results():
     season_history = db.session.query(Result, Match).join(Match, Result.Match_ID == Match.idmatch).filter_by(Season_ID=9).all()
     return render_template('season.html', history=season_history, season=season)
+
+
+@team9.route('/matchresult/<matchid>')
+@login_required
+def matchresult(matchid):
+    results = db.session.query(Player, MatchUp, Match).join(MatchUp, Player.idplayer == MatchUp.Player_ID).join(Match, Match.idmatch == MatchUp.Match_ID).filter_by(idmatch=matchid).all()
+    return render_template('matchresult.html', results=results)
 
 
 @team9.route('/userlist')

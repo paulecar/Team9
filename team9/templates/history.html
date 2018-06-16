@@ -15,7 +15,11 @@
         <tr>
             <td>{{matchup[1]}}</td>
             <td>{{matchup[2]}}</td>
-            <td>{{matchup[3]}}</td>
+            {% if matchup[3] == 'Y' %}
+                <td>Y</td>
+            {% else %}
+                <td></td>
+            {% endif %}
             <td>{{matchup[4]}}</td>
             <td>{{matchup[5]}}</td>
             <td>{{matchup[6]}}</td>

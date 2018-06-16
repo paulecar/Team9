@@ -36,10 +36,16 @@ h2 {
 }
 
 h3 {
-    text-align: left;
+    text-align: center;
 }
 
 div {
+    background-color: azure;
+    color : black;
+    text-align:center;
+}
+
+div.nav {
     background-color: black;
     color : white;
 }
@@ -52,6 +58,12 @@ ul {
 a {
     color : white;
 }
+
+a.tab {
+    color : blue;
+}
+
+
 </style>
 <head>
     {% if title %}
@@ -65,15 +77,14 @@ a {
     {% endif %}
 </head>
 <body>
-    <div>
-        Navigate:
+    <div class="nav">
         <a href="{{ url_for('index') }}">The Bog</a> |
         {% if current_user.is_anonymous %}
             <a href="{{ url_for('login') }}">Login</a> |
             <a href="{{ url_for('register') }}">Register New User</a> |
         {% else %}
             <a href="{{ url_for('logout') }}">Logout</a> |
-            <a href="{{ url_for('seasonh') }}">Season</a> |
+            <a href="{{ url_for('results') }}">Results</a> |
             <a href="{{ url_for('history') }}">History</a> |
         {% endif %}
         {% if current_user.UserRole == 'Admin' %}
