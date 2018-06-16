@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1> Season History - {{season}}</h1>
+    <table title="Season History">
+        <th>Opposing Team</th>
+        <th>Match Date</th>
+        <th>Games For</th>
+        <th>Games Against</th>
+        <th>Racks For</th>
+        <th>Racks Against</th>
+        <th>Result</th>
+        <th>Details</th>
+    {% for match in history %}
+        <tr>
+            <td>{{match.Match.OpposingTeam}}</td>
+            <td>{{match.Match.MatchDate}}</td>
+            <td>{{match.Result.MatchUpsWon}}</td>
+            <td>{{match.Result.MatchUpsLost}}</td>
+            <td>{{match.Result.RacksWon}}</td>
+            <td>{{match.Result.RacksLost}}</td>
+            {% if match.Result.DidWeWin == 1 %}
+                <td>W</td>
+            {% else %}
+                <td>L</td>
+            {% endif %}
+            <td>See Details</td>
+        </tr>
+    {% endfor %}
+    </table>
+{% endblock %}

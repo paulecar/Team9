@@ -13,14 +13,14 @@ class Match(db.Model):
     __table__ = db.Model.metadata.tables['Match']
 
     def __repr__(self):
-        return self.idmatch
+        return self.OpposingTeam
 
 
 class MatchUp(db.Model):
     __table__ = db.Model.metadata.tables['MatchUp']
 
     def __repr__(self):
-        return self.idmatchup
+        return self.OpponentName
 
 
 class Season(db.Model):
@@ -34,7 +34,7 @@ class Result(db.Model):
     __table__ = db.Model.metadata.tables['Result']
 
     def __repr__(self):
-        return self.idresult
+        return str(self.idresult)
 
 
 class User(UserMixin, db.Model):

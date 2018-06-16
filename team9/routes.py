@@ -1,6 +1,6 @@
 from flask import render_template, flash, redirect, url_for
 from team9 import team9, db, email
-from team9.models import Player, Match, Season, MatchUp, User
+from team9.models import Player, Match, Season, MatchUp, User, Result
 from team9.forms import LoginForm, AddMatch, AddMatchUp, RegistrationForm, BogMan, UserMan
 from helper import hcaps
 from flask_login import current_user, login_user, logout_user, login_required
@@ -9,6 +9,9 @@ from flask_login import current_user, login_user, logout_user, login_required
 # TODO Refactor project structure - Split routes into separate views (MVC)
 # TODO Add Season Selector Form
 
+# MatchUp.query.join(Player, Player.idplayer == MatchUp.Player_ID).join(Match, Match.idmatch == MatchUp.Match_ID).add_columns(MatchUp.idmatchup, Match.idmatch, Player.idplayer, MatchUp.Match_ID, MatchUp.Player_ID, Player.Surname, Match.OpposingTeam, MatchUp.OpponentName).filter_by(idmatch=148).all()
+# Result.query.join(Match, Result.Match_ID == Match.idmatch).add_columns(Match.MatchDate, Match.OpposingTeam).filter_by(idmatch=148).all()
+# Result.query.join(Match, Result.Match_ID == Match.idmatch).add_columns(Match.MatchDate, Match.OpposingTeam).filter_by(Season_ID=9).all()
 
 # Get current season, which is used by the 'Add' forms
 season = Season.query.filter_by(CurrentSeason='Y').first()
@@ -20,16 +23,14 @@ def index():
     # TODO Create a splash page and separate from The Bog
     # TODO Fix Bog joins so that players appear when they have no matches played
     # TODO Revisit use of email - this is currently working as is - use for registration and weekly announcements
-    #email.send_email('YRD', 'yourackdiscipline@gmail.com', ['paulecar@mac.com'], 'Hello', '<h1>HTML body</h1>')
-    seasonname = {'seasonname' : season.SeasonName}
+    # email.send_email('YRD', 'yourackdiscipline@gmail.com', ['paulecar@mac.com'], 'Hello', '<h1>HTML body</h1>')
     players =  db.session.execute("SELECT * FROM AmsterdamTeam9.the_bog").fetchall()
     nextmatch = Match.query.order_by(Match.MatchDate.desc()).first()
-    return render_template('index.html', season=seasonname, players=players, nextmatch=nextmatch)
+    return render_template('index.html', season=season.SeasonName, players=players, nextmatch=nextmatch)
 
 
 @team9.route('/ranking')
 def ranking():
-    seasonname = {'seasonname' : season.SeasonName}
     rankings_matchpct = db.session.execute\
         ("SELECT * FROM AmsterdamTeam9.player_ranking WHERE idseason = {} ORDER BY MatchPct Desc".format(season.idseason)).fetchall()
     rankings_rackspct = db.session.execute\
@@ -37,7 +38,7 @@ def ranking():
     rankings_actpct = db.session.execute\
         ("SELECT * FROM AmsterdamTeam9.player_ranking WHERE idseason = {} ORDER BY ActPct Desc".format(season.idseason)).fetchall()
     return render_template('rank.html',
-                           season=seasonname,
+                           season=season.SeasonName,
                            rankings1=rankings_matchpct,
                            rankings2=rankings_rackspct,
                            rankings3=rankings_actpct)
@@ -50,6 +51,13 @@ def history():
     player_history = db.session.execute\
         ("SELECT * FROM AmsterdamTeam9.player_history WHERE idplayer = {}".format(current_user.Player_ID)).fetchall()
     return render_template('history.html', history=player_history, player=player)
+
+
+@team9.route('/seasonh')
+@login_required
+def seasonh():
+    season_history = db.session.query(Result, Match).join(Match, Result.Match_ID == Match.idmatch).filter_by(Season_ID=9).all()
+    return render_template('season.html', history=season_history, season=season)
 
 
 @team9.route('/userlist')
