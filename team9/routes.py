@@ -68,7 +68,8 @@ def matchresult(matchid):
 def userlist():
     if current_user.UserRole != 'Admin':
         return redirect(url_for('index'))
-    users = User.query.outerjoin(Player, Player.idplayer == User.Player_ID).add_columns(User.id, User.UserName, Player.FirstName, Player.Surname).all()
+    users = User.query.outerjoin(Player, Player.idplayer == User.Player_ID).\
+        add_columns(User.id, User.UserName, User.Email, User.ConfCode, User.Verified, User.UserRole, Player.FirstName, Player.Surname).all()
     return render_template('userlist.html', userlist=users)
 
 

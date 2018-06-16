@@ -23,7 +23,6 @@
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav">
                     <li><a href="{{ url_for('index') }}">The Bog</a></li>
-                    <li><a href="{{ url_for('ranking') }}">Ranking</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     {% if current_user.is_anonymous %}
@@ -32,7 +31,8 @@
                     {% else %}
                         <li><a href="{{ url_for('logout') }}">Logout</a></li>
                         <li><a href="{{ url_for('results') }}">Match Results</a></li>
-                        <li><a href="{{ url_for('history') }}">History</a></li>
+                        <li><a href="{{ url_for('history') }}">My History</a></li>
+                        <li><a href="{{ url_for('ranking') }}">Rankings</a></li>
                     {% endif %}
                     {% if current_user.UserRole == 'Admin' %}
                       <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Admin<span class="caret"></span></a>
