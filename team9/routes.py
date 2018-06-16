@@ -63,7 +63,7 @@ def matchresult(matchid):
     results = db.session.query(Player, MatchUp, Match).join(MatchUp, Player.idplayer == MatchUp.Player_ID).join(Match, Match.idmatch == MatchUp.Match_ID).filter_by(idmatch=matchid).all()
     return render_template('matchresult.html', results=results)
 
-
+# TODO Fix join so that unlinked users are listed
 @team9.route('/userlist')
 @login_required
 def userlist():

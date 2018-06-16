@@ -1,15 +1,17 @@
 {% extends "base.html" %}
-{% block content %}
+{% block app_content %}
     <h1> Match Results </h1>
     <h2>{{results[0].Match.MatchDate}} versus '{{results[0].Match.OpposingTeam}}'</h2>
-    <table title="Results">
+    <table title="Results" class="table table-striped">
         <th>Player</th>
         <th>Rank</th>
         <th>Opponent</th>
         <th>Opp Rank</th>
         <th>Score</th>
         <th>WinLose</th>
-        <th>Action</th>
+        {% if current_user.UserRole == 'Admin' %}
+            <th>Action</th>
+        {% endif %}
         {% for result in results %}
         <tr>
             <td>{{result.Player.FirstName}} {{result.Player.Surname}}</td>
@@ -18,7 +20,9 @@
             <td>{{result.MatchUp.OpponentRank}}</td>
             <td>{{result.MatchUp.MyPlayerScore}} : {{result.MatchUp.OpponentScore}}</td>
             <td>{{result.MatchUp.WinLose}}</td>
-            <td><a class="tab" href="{{ url_for('deletematchup', matchupid=result.MatchUp.idmatchup, matchid=result.Match.idmatch) }}">Delete</a></td>
+            {% if current_user.UserRole == 'Admin' %}
+                <td><a class="tab" href="{{ url_for('deletematchup', matchupid=result.MatchUp.idmatchup, matchid=result.Match.idmatch) }}">Delete</a></td>
+            {% endif %}
         </tr>
         {% endfor %}
     </table>

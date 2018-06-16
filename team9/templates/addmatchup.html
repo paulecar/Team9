@@ -1,77 +1,11 @@
 {% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
 
-{% block content %}
+{% block app_content %}
     <h1>{{action}} Result</h1>
-    <form action="" method="post">
-        {{ form.hidden_tag() }}
-        <p>
-            {{ form.matchpick.label }}
-            <br>
-            {{ form.matchpick() }}
-            {% for error in form.matchpick.errors %}
-                <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.playerpick.label }}
-            <br>
-            {{ form.playerpick() }}
-            {% for error in form.playerpick.errors %}
-                <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.playerrank.label }}
-            <br>
-            {{ form.playerrank() }}
-            {% for error in form.playerrank.errors %}
-                <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.playerscore.label }}
-            <br>
-            {{ form.playerscore() }}
-            {% for error in form.playerscore.errors %}
-                <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.opponentpick.label }}
-            <br>
-            {{ form.opponentpick() }}
-            {% for error in form.opponentpick.errors %}
-                <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-
-        </p>
-        <p>
-            {{ form.opponentname.label }}
-            <br>
-            {{ form.opponentname(size=45) }}
-            {% for error in form.opponentname.errors %}
-                <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.opponentrank.label }}
-            <br>
-            {{ form.opponentrank() }}
-            {% for error in form.opponentrank.errors %}
-                <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.opponentscore.label }}
-            <br>
-            {{ form.opponentscore() }}
-            {% for error in form.opponentscore.errors %}
-                <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.mathematical_elimination() }} {{ form.mathematical_elimination.label }}
-        </p>
-        <p>{{ form.submit() }}</p>
-    </form>
+    <div class="row">
+        <div class="col-md-4">
+            {{ wtf.quick_form(form) }}
+        </div>
+    </div>
 {% endblock %}

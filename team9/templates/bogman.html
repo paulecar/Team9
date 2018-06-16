@@ -1,42 +1,12 @@
 {% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
 
-{% block content %}
+{% block app_content %}
+    <!-- TODO Redo this form to render the radio button title correctly - need to abandon quick_form -->
     <h1>Manage The Bog</h1>
-    <form action="" method="post">
-        {{ form.hidden_tag() }}
-        <div><p>Pick Player and select new values for 'The Bog'</p></div>
-        <p>
-            {{ form.playerpick.label }}
-            <br>
-            {{ form.playerpick() }}
-            {% for error in form.playerpick.errors %}
-                <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.bogged.label }}
-            <br>
-            {{ form.bogged() }}
-            {% for error in form.bogged.errors %}
-                <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.change.label }}
-            <br>
-            {{ form.change() }}
-            {% for error in form.change.errors %}
-                <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.bogdate.label }}
-            <br>
-            {{ form.bogdate() }}
-            {% for error in form.bogdate.errors %}
-                <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>{{ form.submit() }}</p>
-    </form>
+    <div class="row">
+        <div class="col-md-4">
+            {{ wtf.quick_form(form) }}
+        </div>
+    </div>
 {% endblock %}

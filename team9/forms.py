@@ -31,10 +31,10 @@ class AddMatch(FlaskForm):
         picks.append((i,team.OpposingTeam))
     teampick = SelectField('Pick Team', choices=picks, coerce=int)
     opposingteam = StringField('Opposing Team')
-    playoff = BooleanField('Playoff Match', default=False)
     # TODO Revisit 'flask-moment' extension from 'Dates and Times' section
     matchdate = DateField('Match Date', validators=[DateField], default=datetime.today(), format="%Y-%m-%d")
     starttime = TimeField('Start Time', validators=[TimeField])
+    playoff = BooleanField('Playoff Match', default=False)
     submit = SubmitField('Create Match')
 
 
@@ -78,11 +78,11 @@ class AddMatchUp(FlaskForm):
     playerpick = SelectField('Select Our Player',
                              choices=player, coerce=int)
     playerrank = SelectField('Select Player Rank', choices=ranks)
+    playerscore = SelectField('Our Player Scores', choices=racks, coerce=int)
     opponentpick = SelectField('Select Opponent  or enter New Player',
                                choices=opponent, coerce=int)
     opponentname = StringField('Opponent')
     opponentrank = SelectField('Select Opponent Rank', choices=ranks)
-    playerscore = SelectField('Our Player Scores', choices=racks, coerce=int)
     opponentscore = SelectField('Opponent Scores', choices=racks, coerce=int)
     mathematical_elimination = BooleanField('Mathematical elimination stops play')
     submit = SubmitField('Create Match Result')
@@ -161,12 +161,12 @@ class BogMan(FlaskForm):
     for playername in playernames:
         player.append((playername.idplayer, playername.FirstName + ' ' + playername.Surname))
 
-    playerpick = SelectField('Select Player',
-                             choices=player, coerce=int)
+    playerpick = SelectField('Select Player', choices=player, coerce=int)
     bogged = RadioField('Bogged?', choices=[('Y', 'Bogged'), ('N', 'Not Bogged')], default='Y')
-    change = RadioField('Change Bog Date?', choices=[('Y', 'Yes'), ('N', 'No')], default='Y')
 
     bogdate = DateField('Bogged Date', validators=[DateField], default=datetime.today() , format="%Y-%m-%d")
+    change = RadioField('Change Bog Date?', choices=[('Y', 'Change Date'), ('N', 'Ignore Date')], default='Y')
+
     submit = SubmitField('Update Bog')
 
 

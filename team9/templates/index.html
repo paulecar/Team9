@@ -1,10 +1,14 @@
 {% extends "base.html" %}
 
-{% block content %}
-    <h1> You Rack Discipline - Amsterdam Team 9 - {{season}} </h1>
+{% block app_content %}
+    <h1> Amsterdam Team 9 Ball League - {{season}} </h1>
+    <div class="jumbotron">
+        <h3>The next match is on {{"{:%A, %d %b }".format(nextmatch.MatchDate)}} @ {{"{:%H:%M}".format(nextmatch.StartTime)}}
+            <small>We are playing "{{nextmatch.OpposingTeam}}"</small></h3>
+    </div>
+    <hr>
     <h2> The Bog of Eternal Stench</h2>
-    <h3> The next match is on {{nextmatch.MatchDate}} @ {{nextmatch.StartTime}} - we are playing "{{nextmatch.OpposingTeam}}"</h3>
-    <table title="The Bog">
+    <table title="The Bog" class="table table-striped">
         <th>Surname</th>
         <th>Lost On</th>
         <th>Won On</th>
@@ -24,10 +28,8 @@
         </tr>
         {% endfor %}
     </table>
-    <br>
     <hr>
-    <br>
-    <div>
+    <div class="well">
         <h2>Bog Rules:</h2>
         <ol>
             <li>Lose, and you enter the Bog</li>

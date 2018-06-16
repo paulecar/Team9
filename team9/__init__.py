@@ -5,9 +5,9 @@ from flask_login import LoginManager
 from flask_mail import Mail
 
 # TODO Revisit Bootstrap instead of CSS
-# from flask_bootstrap import Bootstrap
+from flask_bootstrap import Bootstrap
 
-# Not manageing DB updates in the application, so this is not needed
+# Not managing DB updates in the application, so this is not needed
 # from flask_migrate import Migrate
 
 # This import with give me the missingMySQLdb python object
@@ -19,6 +19,7 @@ team9 = Flask(__name__)
 team9.config.from_object(Config)
 login = LoginManager(team9)
 mail = Mail(team9)
+bootstrap = Bootstrap(team9)
 
 # Create the DB engine object, which gives me access to the session later
 db = SQLAlchemy(team9)
