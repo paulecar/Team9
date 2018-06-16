@@ -44,6 +44,9 @@ def ranking():
 @team9.route('/history')
 @login_required
 def history():
+    if current_user.Player_ID is None:
+        return redirect(url_for('index'))
+
     player = Player.query.filter_by(idplayer=current_user.Player_ID).first()
     player_history = db.session.execute\
         ("SELECT * FROM AmsterdamTeam9.player_history WHERE idplayer = {}".format(current_user.Player_ID)).fetchall()
