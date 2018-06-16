@@ -63,13 +63,12 @@ def matchresult(matchid):
     results = db.session.query(Player, MatchUp, Match).join(MatchUp, Player.idplayer == MatchUp.Player_ID).join(Match, Match.idmatch == MatchUp.Match_ID).filter_by(idmatch=matchid).all()
     return render_template('matchresult.html', results=results)
 
-# TODO Fix join so that unlinked users are listed
 @team9.route('/userlist')
 @login_required
 def userlist():
     if current_user.UserRole != 'Admin':
         return redirect(url_for('index'))
-    users = User.query.join(Player, Player.idplayer == User.Player_ID).add_columns(User.id, User.UserName, User.Email, User.ConfCode, User.Verified, User.UserRole, Player.FirstName, Player.Surname).all()
+    users = User.query.outerjoin(Player, Player.idplayer == User.Player_ID).add_columns(User.id, User.UserName, Player.FirstName, Player.Surname).all()
     return render_template('userlist.html', userlist=users)
 
 
@@ -115,6 +114,16 @@ def addmatch():
     if current_user.UserRole != 'Admin':
         return redirect(url_for('index'))
     form = AddMatch()
+
+    # Pick list for opposing team
+    i=0
+    form.picks.append((0,'New Team..'))
+    teams = db.session.query(Match.OpposingTeam).group_by(Match.OpposingTeam).\
+        order_by(Match.OpposingTeam).all()
+    for team in teams:
+        i=i+1
+        form.picks.append((i,team.OpposingTeam))
+
     if form.validate_on_submit():
         # If 'New Team' selected then use the form input field,
         # otherwise the value from selected tuple
@@ -148,16 +157,38 @@ def addmatchup():
     if current_user.UserRole != 'Admin':
         return redirect(url_for('index'))
     form = AddMatchUp()
+
+    # Matches from the current season
+    season = Season.query.filter_by(CurrentSeason='Y').first()
+    matches = Match.query.filter_by(Season_ID=season.idseason).order_by(Match.MatchDate.desc()).all()
+    for m in matches:
+        desc = m.OpposingTeam + ' on ' + str(m.MatchDate)
+        form.match.append((m.idmatch, desc))
+
+
+    # Our team - active players
+    playernames = Player.query.filter_by(Active='Y').order_by(Player.Surname).all()
+    for playername in playernames:
+        form.player.append((playername.idplayer, playername.FirstName + ' ' + playername.Surname))
+
+
     # Opposing team players - from match up history (no join to opposing team data)
     i=0
-    opponent=[]
-    opponent.append((0, 'New Opponent...'))
+    form.opponent.append((0, 'New Opponent...'))
     opponentnames = db.session.query(MatchUp.OpponentName).group_by(MatchUp.OpponentName).\
         order_by(MatchUp.OpponentName).all()
     for opponentname in opponentnames:
         i=i+1
-        opponent.append((i, opponentname.OpponentName))
-    form.opponentpick.choices=opponent
+        form.opponent.append((i, opponentname.OpponentName))
+
+
+    # Racks to win - 0 thru 11 only
+    i=0
+    while i < 12:
+        form.racks.append((i,i))
+        i = i + 1
+
+
     if form.validate_on_submit():
         # If 'New Player' selected then use the form input field,
         # otherwise the value from selected tuple
@@ -217,6 +248,13 @@ def bogman():
     if current_user.UserRole != 'Admin':
         return redirect(url_for('index'))
     form = BogMan()
+
+    # Our team - active players
+    playernames = Player.query.filter_by(Active='Y').order_by(Player.Surname).all()
+    for playername in playernames:
+        form.player.append((playername.idplayer, playername.FirstName + ' ' + playername.Surname))
+
+
     if form.validate_on_submit():
         player = Player.query.filter_by(idplayer=form.playerpick.data).first()
         player.Bogged = form.bogged.data
@@ -235,6 +273,17 @@ def userman():
     if current_user.UserRole != 'Admin':
         return redirect(url_for('index'))
     form = UserMan()
+
+    playernames = Player.query.filter_by(Active='Y').order_by(Player.Surname).all()
+    for playername in playernames:
+        form.player.append((playername.idplayer, playername.FirstName + ' ' + playername.Surname))
+
+
+    users = User.query.order_by(User.UserName).all()
+    for userid in users:
+        form.user.append((userid.id, userid.UserName + ' ' + userid.Email))
+
+
     if form.validate_on_submit():
         user = User.query.filter_by(id=form.userpick.data).first()
         user.Player_ID = form.playerpick.data

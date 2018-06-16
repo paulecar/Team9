@@ -4,7 +4,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_mail import Mail
 
-# TODO Revisit Bootstrap instead of CSS
 from flask_bootstrap import Bootstrap
 
 # Not managing DB updates in the application, so this is not needed

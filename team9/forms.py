@@ -3,15 +3,11 @@ from wtforms import StringField, PasswordField, DateField, SelectField, BooleanF
 from wtforms_components import TimeField
 from wtforms.validators import DataRequired, Email, ValidationError, InputRequired, Required, EqualTo
 
-# TODO Move database lookups out of forms.py and into routes.py to makes sure commits are honored
-# Database Items
-from team9 import db
-from team9.models import Match, MatchUp, Player, User, Season
-
 # Helpers
 from datetime import datetime
 from helper import hcaps, ranks
 
+from team9.models import User
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -21,17 +17,12 @@ class LoginForm(FlaskForm):
 
 
 class AddMatch(FlaskForm):
-    i=0
+    # Pick list
     picks=[]
-    picks.append((0,'New Team..'))
-    teams = db.session.query(Match.OpposingTeam).group_by(Match.OpposingTeam).\
-        order_by(Match.OpposingTeam).all()
-    for team in teams:
-        i=i+1
-        picks.append((i,team.OpposingTeam))
+
+
     teampick = SelectField('Pick Team', choices=picks, coerce=int)
     opposingteam = StringField('Opposing Team')
-    # TODO Revisit 'flask-moment' extension from 'Dates and Times' section
     matchdate = DateField('Match Date', validators=[DateField], default=datetime.today(), format="%Y-%m-%d")
     starttime = TimeField('Start Time', validators=[TimeField])
     playoff = BooleanField('Playoff Match', default=False)
@@ -46,32 +37,11 @@ class AddMatch(FlaskForm):
 
 
 class AddMatchUp(FlaskForm):
-    # Matches from the current season
-    season = Season.query.filter_by(CurrentSeason='Y').first()
-    match=[]
-    matches = Match.query.filter_by(Season_ID=season.idseason).order_by(Match.MatchDate.desc()).all()
-    for m in matches:
-        desc = m.OpposingTeam + ' on ' + str(m.MatchDate)
-        match.append((m.idmatch, desc))
-
-
-    # Our team - active players
+    # Define pick lists
     player=[]
-    playernames = Player.query.filter_by(Active='Y').order_by(Player.Surname).all()
-    for playername in playernames:
-        player.append((playername.idplayer, playername.FirstName + ' ' + playername.Surname))
-
-
     opponent=[]
-    opponent.append((0, 'New Opponent...'))
-
-    # Racks to win - 0 thru 11 only
-    i=0
     racks=[]
-    while i < 12:
-        racks.append((i,i))
-        i = i + 1
-
+    match=[]
 
     # Main from starts here
     matchpick = SelectField('Select Match', choices=match, coerce=int)
@@ -155,12 +125,7 @@ class RegistrationForm(FlaskForm):
 
 class BogMan(FlaskForm):
     # Create pick lists
-    # Our team - active players
     player=[]
-    playernames = Player.query.filter_by(Active='Y').order_by(Player.Surname).all()
-    for playername in playernames:
-        player.append((playername.idplayer, playername.FirstName + ' ' + playername.Surname))
-
     playerpick = SelectField('Select Player', choices=player, coerce=int)
     bogged = RadioField('Bogged?', choices=[('Y', 'Bogged'), ('N', 'Not Bogged')], default='Y')
 
@@ -172,17 +137,8 @@ class BogMan(FlaskForm):
 
 class UserMan(FlaskForm):
     # Create pick lists
-    # Our team - active players
     player=[]
-    playernames = Player.query.filter_by(Active='Y').order_by(Player.Surname).all()
-    for playername in playernames:
-        player.append((playername.idplayer, playername.FirstName + ' ' + playername.Surname))
-
-    # Active Users
     user = []
-    users = User.query.order_by(User.UserName).all()
-    for userid in users:
-        user.append((userid.id, userid.UserName + ' ' + userid.Email))
 
     playerpick = SelectField('Select Player', choices=player, coerce=int)
     userpick = SelectField('Select User', choices=user, coerce=int)
