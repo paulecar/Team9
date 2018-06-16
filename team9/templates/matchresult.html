@@ -21,7 +21,10 @@
             <td>{{result.MatchUp.MyPlayerScore}} : {{result.MatchUp.OpponentScore}}</td>
             <td>{{result.MatchUp.WinLose}}</td>
             {% if current_user.UserRole == 'Admin' %}
-                <td><a title="delete matchup result" class="tab" href="{{ url_for('deletematchup', matchupid=result.MatchUp.idmatchup, matchid=result.Match.idmatch) }}">Delete</a></td>
+                <td><a title="delete matchup result"
+                       class="tab"
+                       href="{{ url_for('deletematchup', matchupid=result.MatchUp.idmatchup, matchid=result.Match.idmatch) }}">
+                    Delete</a></td>
             {% endif %}
         </tr>
         {% endfor %}
