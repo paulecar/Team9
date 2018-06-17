@@ -20,7 +20,6 @@ class AddMatch(FlaskForm):
     # Pick list
     picks=[]
 
-
     teampick = SelectField('Pick Team', choices=picks, coerce=int)
     opposingteam = StringField('Opposing Team')
     matchdate = DateField('Match Date', validators=[DateField], default=datetime.today(), format="%Y-%m-%d")
