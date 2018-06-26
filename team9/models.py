@@ -3,42 +3,42 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 
 class Player(db.Model):
-    __table__ = db.Model.metadata.tables['Player']
+    __table__ = db.Model.metadata.tables['player']
 
     def __repr__(self):
         return self.Surname
 
 
 class Match(db.Model):
-    __table__ = db.Model.metadata.tables['Match']
+    __table__ = db.Model.metadata.tables['match']
 
     def __repr__(self):
         return self.OpposingTeam
 
 
 class MatchUp(db.Model):
-    __table__ = db.Model.metadata.tables['MatchUp']
+    __table__ = db.Model.metadata.tables['matchup']
 
     def __repr__(self):
         return self.OpponentName
 
 
 class Season(db.Model):
-    __table__ = db.Model.metadata.tables['Season']
+    __table__ = db.Model.metadata.tables['season']
 
     def __repr__(self):
         return self.SeasonName
 
 
 class Result(db.Model):
-    __table__ = db.Model.metadata.tables['Result']
+    __table__ = db.Model.metadata.tables['result']
 
     def __repr__(self):
         return str(self.idresult)
 
 
 class User(UserMixin, db.Model):
-    __table__ = db.Model.metadata.tables['User']
+    __table__ = db.Model.metadata.tables['user']
 
     def __repr__(self):
         return self.UserName
