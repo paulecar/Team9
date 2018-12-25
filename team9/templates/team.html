@@ -5,7 +5,8 @@
     <div class="table-responsive">
         <table title="Team History" class="table table-striped">
             <th></th>
-            <th>Date (Play Off)</th>
+            <th>Date</th>
+            <th>Play Off</th>
             <th>Games</th>
             <th>Racks</th>
             <th>Result</th>
@@ -25,9 +26,12 @@
                                     <span class="glyphicon glyphicon-edit"></a>
                             {% endif %}
                         </td>
-                        <td>{{match.Match.MatchDate}}
+                        <td>
+                            {{match.Match.MatchDate}}
+                        </td>
+                        <td>
                             {% if match.Match.PlayOff %}
-                                ({{match.Match.PlayOff}})
+                                {{match.Match.PlayOff}}
                             {% endif %}
                         </td>
                         <td>{{match.Result.MatchUpsWon}} : {{match.Result.MatchUpsLost}}</td>
@@ -40,7 +44,7 @@
                             <td><span class="label label-warning">LOSS</span></td>
                         {% endif %}
                     {% else %}
-                        <td></td><td></td><td></td><td></td><td></td>
+                        <td></td><td></td><td></td><td></td><td></td><td></td>
                     {% endif %}
                     <td>
                         <a title="display player stats"

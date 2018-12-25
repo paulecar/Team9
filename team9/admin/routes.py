@@ -99,7 +99,7 @@ def updatematch(matchid):
         flash('Match {} against {} changed.'.format(match.idmatch, match.OpposingTeam))
         return redirect(url_for('main.results'))
     # Renders on the GET or when the input does not validate
-    return render_template('admin/updatematch.html', title='Bog Manager', form=form, )
+    return render_template('admin/updatematch.html', title='Update Match', form=form, )
 
 
 @bp.route('/addseason', methods=['GET', 'POST'])

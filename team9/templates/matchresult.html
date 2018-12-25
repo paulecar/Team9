@@ -17,12 +17,16 @@
         </table>
     </div>
     {% if current_user.UserRole == 'Admin' %}
-        <a class="btn btn-danger btn-sm"
+        <a class="btn btn-default btn-xs"
+               title="modify date or time"
+               href="{{ url_for('admin.updatematch', matchid=results[0].Match.idmatch) }}">
+            Update Match </a>
+        <a class="btn btn-danger btn-xs"
            title="delete this match"
            data-toggle="modal"
            data-target="#areyousureMatch">
             Delete Match</a>
-        <a class="btn btn-primary btn-sm"
+        <a class="btn btn-primary btn-xs"
            title="add head to head"
            href="{{ url_for('admin.addmatchup', matchid=results[0].Match.idmatch) }}">
             Add Match Up</a>

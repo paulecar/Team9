@@ -246,7 +246,7 @@ def drilldown(player_id=None, season_id=None, win_loss=None):
 def team(team):
     team_history = db.session.query(Result, MatchUp, Player, Match).join(MatchUp, MatchUp.Match_ID == Result.Match_ID). \
         join(Player, Player.idplayer == MatchUp.Player_ID).join(Match, Match.idmatch == MatchUp.Match_ID). \
-        filter_by(OpposingTeam=team).order_by(Match.MatchDate.desc()).all()
+        filter_by(OpposingTeam=team).order_by(Match.MatchDate.desc(), MatchUp.idmatchup.asc()).all()
 
     # Check to see if latest match is still in progress
     match_inprogress = False
@@ -407,9 +407,9 @@ def matchresult(matchid):
     return render_template('matchresult.html', results=results, helper_role="off", hcaps=hcaps)
 
 
-@bp.route('/livescore/<matchupid>', methods=['GET', 'POST'])
+@bp.route('/livescore/<matchupid>/<helper>', methods=['GET', 'POST'])
 @login_required
-def livescore(matchupid):
+def livescore(matchupid, helper):
     if current_user.UserRole != 'Admin' and current_user.UserRole != 'Helper':
         return redirect(url_for('main.index'))
 
@@ -431,7 +431,12 @@ def livescore(matchupid):
         flash('Updated MatchUp - Match versus {} is now {} : {}'.
               format(matchup.OpponentName, form.playerscore.data, form.opponentscore.data))
 
-        return redirect(url_for('main.index'))
+        # Using helper flag to indicate whether the livescore came from home page or match result page
+        if helper == "on":
+            return redirect(url_for('main.index'))
+        else:
+            return redirect(url_for('main.matchresult', matchid=matchup.Match_ID))
+
 
     # Renders on the GET of when the input does not validate
     return render_template('livescore.html', title='Update Score', form=form, action='Update')
