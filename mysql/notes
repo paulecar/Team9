@@ -1,0 +1,11 @@
+# Magic words to create a table
+/usr/local/mysql/bin/mysql -u root -p amsterdamteam9  < kvm.sql
+
+# REPL ow we have app factory
+from team9 import create_app
+team9 = create_app()
+team9.app_context().push()
+import team9.models
+from team9.models import Match
+nextmatch = Match.query.order_by(Match.MatchDate.desc()).first()
+nextmatch

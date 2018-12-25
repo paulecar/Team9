@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block app_content %}
+    <h4 class="text-muted" align="center">Selected History for {{player.FirstName}} {{player.Surname}}</h4>
+
+    <div class="table-responsive">
+    <table title="History" class="table table-striped">
+        <th>Match Date</th>
+        <th>Play Off</th>
+        <th>Your Rank</th>
+        <th>Opponent</th>
+        <th>Rank</th>
+        <th>Score</th>
+        <th>Result</th>
+        <th>Opposing Team</th>
+        {% for matchup in history %}
+            <tr>
+                <td>{{matchup.Match.MatchDate}}</td>
+                {% if matchup.Match.Playoff == 'Y' %}
+                    <td>Y</td>
+                {% else %}
+                    <td></td>
+                {% endif %}
+                <td>{{matchup.MatchUp.MyPlayerRank}}</td>
+                <td><a class="tab" title="show opponent history"
+                       href="{{ url_for('main.opponent', opp=matchup.MatchUp.OpponentName) }}">
+                        {{matchup.MatchUp.OpponentName}}</a>
+                </td>
+                <td>{{matchup.MatchUp.OpponentRank}}</td>
+                <td>{{matchup.MatchUp.MyPlayerScore}} : {{matchup.MatchUp.OpponentScore}}</td>
+                <td>
+                    {% if matchup.MatchUp.WinLose == "W" %}
+                        <span class="label label-success">WIN</span>
+                    {% else %}
+                        <span class="label label-warning">LOSS</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a title="show team history" href="{{ url_for('main.team', team=matchup.Match.OpposingTeam) }}">
+                        {{matchup.Match.OpposingTeam}}
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+    </div>
+{% endblock %}

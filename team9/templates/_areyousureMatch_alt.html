@@ -1,0 +1,18 @@
+<!-- Modal -->
+<div class="modal fade" id="areyousureMatch" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Delete Confirmation</h5>
+      </div>
+      <div class="modal-body">
+        You are about to delete match {{nextmatch.idmatch}}. Are you sure?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
+          <a class="btn btn-danger btn-sm" title="delete this match" href="{{ url_for('admin.deletematch', matchid=nextmatch.idmatch) }}">
+                        Delete Match</a>
+      </div>
+    </div>
+  </div>
+</div>

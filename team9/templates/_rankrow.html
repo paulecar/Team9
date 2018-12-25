@@ -1,0 +1,10 @@
+<td><a title="display player stats"
+       class="tab"
+       href="{{ url_for('main.history', player_id=ranking[0]) }}">
+    {{ranking.FirstName}} {{ranking.Surname}}</a>
+</td>
+<td>{{ranking.MatchesPlayed}} : {{ranking.Wins}}</td>
+<td>{{ranking.ActRacksWon}} : {{ranking.ActRacksLost}}</td>
+<td>{{ranking.ActRacksPlayed}}</td>
+<td>{{ranking.RacksWon}} : {{ranking.RacksLost}}</td>
+<td>{{ranking.RacksPlayed}}</td>

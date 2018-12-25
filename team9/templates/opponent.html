@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block app_content %}
+    <h1 class="text-muted" align="center"> Opponent History - {{opp}}</h1>
+    <div class="table-responsive">
+        <table title="Team History" class="table table-hover">
+            <th>Match Date</th>
+            <th>Team</th>
+            <th>Play Off</th>
+            <th>{{opp.split()[0]}}'s Rank</th>
+            <th>Our Player</th>
+            <th>Rank</th>
+            <th>Result</th>
+            <th>Score</th>
+            {% for match in history %}
+            <tr>
+                <td>{{match.Match.MatchDate}}</td>
+                <td><a title="show team history"
+                       href="{{ url_for('main.team', team=match.Match.OpposingTeam) }}">
+                        {{match.Match.OpposingTeam}}
+                    </a>
+                </td>
+                {% if match.Match.PlayOff %}
+                    <td>{{match.Match.PlayOff}}</td>
+                {% else %}
+                    <td></td>
+                {% endif %}
+                <td>{{match.MatchUp.OpponentRank}}</td>
+                <td><a title="display player stats"
+                       class="tab"
+                       href="{{ url_for('main.history', player_id=match.Player.idplayer) }}">
+                    {{match.Player.FirstName}} {{match.Player.Surname}}</a>
+                </td>
+                <td>{{match.MatchUp.MyPlayerRank}}</td>
+                <td>
+                    {% if match.MatchUp.WinLose == 'I' %}
+                        <span class="label label-default">IN PROGRESS</span>
+                    {% else %}
+                        {% if match.MatchUp.WinLose == "W" %}
+                            <span class="label label-success">WIN</span>
+                        {% else %}
+                            <span class="label label-warning">LOSS</span>
+                        {% endif %}
+                    {% endif %}
+                <td>{{match.MatchUp.MyPlayerScore}} : {{match.MatchUp.OpponentScore}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+{% endblock %}

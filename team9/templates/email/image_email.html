@@ -1,0 +1,44 @@
+<div style="background-color:grey;border-radius:5px">
+    <h2 align="center" style="color:white;">
+        The next match is on {{"{:%A, %d %b }".format(nextmatch.MatchDate)}} @
+        {{"{:%H:%M}".format(nextmatch.StartTime)}}
+        <br>
+        <small>We are playing <code>"{{nextmatch.OpposingTeam}}" </code>
+            {% if nextmatch.PlayOff == 'Y' %}
+            in the PLAYOFFS!
+            {% endif %}
+        </small>
+    </h2>
+</div>
+
+<div style="background-color:aliceblue;border-radius:5px" align="center">
+    <h3><i>Captain's Message:</i></h3>
+    <p>{{captainsMessage}}</p>
+    <br>
+</div>
+
+<div align="center" style="color:dimgray;">
+    <h2> The Rule of the Bog is in full stench, and our line up is:</h2>
+    {% for player in players %}
+        {% if player.Player.Bogged == "N" %}
+            <i>{{player.Player.FirstName + " " + player.Player.Surname}}</i><br>
+        {% endif %}
+    {% endfor %}
+</div>
+
+<div align="center" style="color:dimgray;">
+    <p><strong>Please <mark>CONFIRM</mark> that you will be able to make it by responding to this email.</strong></p>
+    <hr>
+    <p>Keep your eyes open for any updates, as I will resend this email if the line-up needs to change based on your availability</p>
+    <p>For last week's result, the Bog and the Rankings - check the <a href="https://www.yourackdiscipline.com/index">Home Page</a>
+        - and I encourage those not covered in an awful stench to join the team and have a drink or two.</p>
+</div>
+
+<hr>
+<div align="center">
+    <h3> And now, this:</h3>
+    <img src="https://www.yourackdiscipline.com/static/{{image}}" width="50%" alt="Your Moment of Pool Zen">
+    <br>
+    Can't see the image? Click <a href="https://www.yourackdiscipline.com/static/{{image}}">here.</a>
+</div>
+</html>

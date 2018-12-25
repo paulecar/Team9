@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block app_content %}
+    <h1 class="text-muted"> Select Season</h1>
+    <table title="Users" class="table table-striped">
+        <th>Season</th>
+        <th>Start</th>
+        <th>End</th>
+        {% for season in seasons %}
+            <tr>
+                {% if pick == "ranking" %}
+                    <td>
+                        <a title="select season"
+                           class="tab"
+                           href="{{ url_for('main.ranking', season_id=season.idseason, season_name=season.SeasonName) }}">
+                            {{season.SeasonName}}</a>
+                    </td>
+                {% else %}
+                    <td>
+                        <a title="select season"
+                           class="tab"
+                           href="{{ url_for('main.results', season_id=season.idseason, season_name=season.SeasonName) }}">
+                            {{season.SeasonName}}</a>
+                    </td>
+                {% endif %}
+                <td>{{season.SeasonStart}}</td>
+                <td>{{season.SeasonEnd}}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

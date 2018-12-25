@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block app_content %}
+
+    {% if current_user.UserRole == 'Admin' %}
+        <h1 class="bg-danger text-muted" align="center">Match Result</h1>
+    {% else %}
+        <h1 class="text-muted" align="center">Match Result</h1>
+    {% endif %}
+    {% if results %}
+        <h3>{{results[0].Match.MatchDate}} versus '{{results[0].Match.OpposingTeam}}'</h3>
+    {% else %}
+        <h3>No Scores Posted</h3>
+    {% endif %}
+    <div class="table-responsive">
+        <table title="Results" class="table table-striped">
+                {% include '_scores.html' %}
+        </table>
+    </div>
+    {% if current_user.UserRole == 'Admin' %}
+        <a class="btn btn-danger btn-sm"
+           title="delete this match"
+           data-toggle="modal"
+           data-target="#areyousureMatch">
+            Delete Match</a>
+        <a class="btn btn-primary btn-sm"
+           title="add head to head"
+           href="{{ url_for('admin.addmatchup', matchid=results[0].Match.idmatch) }}">
+            Add Match Up</a>
+    {% endif %}
+
+    {% include '_areyousureMatch.html' %}
+
+{% endblock %}

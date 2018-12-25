@@ -1,0 +1,79 @@
+<th>Player (Rank)</th>
+<th>Opponent (Rank)</th>
+<th>Race</th>
+<th class="text-center">Score</th>
+<th>WinLose</th>
+
+{% if current_user.UserRole == 'Admin' or current_user.UserRole == 'Helper' and helper_role == "on" %}
+    <th>Delete</th>
+{% endif %}
+
+{% for result in results %}
+<tr>
+    <td>
+        <a title="display player stats"
+           class="tab"
+           href="{{ url_for('main.history', player_id=result.Player.idplayer) }}">
+            {{result.Player.FirstName}} {{result.Player.Surname}}</a>
+         ({{result.MatchUp.MyPlayerRank}})
+    </td>
+    <td>
+        {% if current_user.is_anonymous %}
+            {{result.MatchUp.OpponentName}} ({{result.MatchUp.OpponentRank}})
+        {% else %}
+            <a class="tab" title="show opponent history" href="{{ url_for('main.opponent', opp=result.MatchUp.OpponentName) }}">
+                {{result.MatchUp.OpponentName}}</a> ({{result.MatchUp.OpponentRank}})
+        {% endif %}
+    </td>
+    <td>{{'{} on {}'.format(hcaps[result.MatchUp.MyPlayerRank][result.MatchUp.OpponentRank][0],
+        hcaps[result.MatchUp.MyPlayerRank][result.MatchUp.OpponentRank][1])}}
+    </td>
+    {% if (current_user.UserRole == 'Admin' or current_user.UserRole == 'Helper') and helper_role == "on" %}
+        <td class="text-center">
+            <a title="add one"
+                   class="btn btn-default btn-xs"
+                   href="{{ url_for('main.updatematchup', matchupid=result.MatchUp.idmatchup, player='MY') }}">
+                +</a>
+    {% else %}
+        <td class="text-center">
+    {% endif %}
+    {% if current_user.UserRole == 'Admin' or (current_user.UserRole == 'Helper' and helper_role == "on") %}
+            <a title="update live score"
+               class="btn btn-default btn-xs"
+               href="{{ url_for('main.livescore', matchupid=result.MatchUp.idmatchup) }}">
+                {{result.MatchUp.MyPlayerScore}} : {{result.MatchUp.OpponentScore}}
+                 <span class="glyphicon glyphicon-edit">
+                </a>
+    {% else %}
+            {{result.MatchUp.MyPlayerScore}} : {{result.MatchUp.OpponentScore}}
+    {% endif %}
+    {% if (current_user.UserRole == 'Admin' or current_user.UserRole == 'Helper') and helper_role == "on" %}
+            <a title="add one"
+               class="btn btn-default btn-xs"
+               href="{{ url_for('main.updatematchup', matchupid=result.MatchUp.idmatchup, player='OPP') }}">
+                +</a>
+        </td>
+    {% endif %}
+    <td>
+        {% if result.MatchUp.WinLose == 'I' %}
+            <span class="label label-default">IN PROGRESS</span>
+        {% else %}
+            {% if result.MatchUp.WinLose == "W" %}
+                <span class="label label-success">WIN</span>
+            {% else %}
+                <span class="label label-warning">LOSS</span>
+            {% endif %}
+        {% endif %}
+    </td>
+    {% if current_user.UserRole == 'Admin' or current_user.UserRole == 'Helper' and helper_role == "on" %}
+        <td><a class="btn btn-danger btn-xs"
+               title="delete this match up"
+               data-toggle="modal"
+               data-target="#areyousureMatchUp{{result.MatchUp.idmatchup}}">
+                Delete</a>
+        </td>
+    {% endif %}
+</tr>
+{% include '_areyousureMatchUp.html' %}
+
+{% endfor %}

@@ -1,0 +1,72 @@
+{% extends 'bootstrap/base.html' %}
+
+{% block title %}
+    {% if title %}
+        Home Page - {{title}}
+    {% else %}
+        Home Page - You Rack Discipline
+    {% endif %}
+{% endblock %}
+
+{% block navbar %}
+    <nav class="navbar navbar-inverse">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="{{ url_for('main.index') }}">You Rack Discipline</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    {% if current_user.is_anonymous %}
+                        <li><a href="{{ url_for('auth.login') }}"><span class="glyphicon glyphicon-log-in"> Login</a></li>
+                        <li><a href="{{ url_for('auth.register') }}"><span class="glyphicon glyphicon-user"> Register</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for('auth.logout') }}"><span class="glyphicon glyphicon-log-out"> Logout</a></li>
+                        <li><a href="{{ url_for('main.results') }}"><span class="glyphicon glyphicon-dashboard"> Results</a></li>
+                        <li><a href="{{ url_for('main.lifetime') }}"><span class="glyphicon glyphicon-user"> Players</a></li>
+                        <li><a href="{{ url_for('main.history') }}"><span class="glyphicon glyphicon-list"> Me</a></li>
+                        <li><a href="{{ url_for('main.ranking') }}"><span class="glyphicon glyphicon-sort-by-attributes"> Rankings</a></li>
+                        <li><a href="{{ url_for('main.availability') }}"><span class="glyphicon glyphicon-calendar"> Availability</a></li>
+                    {% endif %}
+                    {% if current_user.UserRole == 'Admin' %}
+                      <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Admin<span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{{ url_for('admin.addmatch') }}">Add Match</a></li>
+                            <li><a href="{{ url_for('admin.addseason') }}">Add Season</a></li>
+                            <li><a href="{{ url_for('admin.seasonlist') }}">Season List</a></li>
+                            <hr>
+                            <li><a href="{{ url_for('email.message') }}">Email Message</a></li>
+                            <li><a href="{{ url_for('admin.upload') }}">Upload Image</a></li>
+                            <hr>
+                            <li><a href="{{ url_for('admin.userlist') }}">User List</a></li>
+                            <li><a href="{{ url_for('admin.addplayer') }}">Add Player</a></li>
+                        </ul>
+                      </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <ul>
+                {% for message in messages %}
+                <div class="alert alert-info" role="alert">{{ message }}</div>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        {% endwith %}
+        {% block app_content %}{% endblock %}
+    </div>
+{% endblock %}
+
+

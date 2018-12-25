@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<h1 class="text-muted" align="center"> Amsterdam Team 9 Ball League<br>{{season.SeasonName}}</h1>
+<div class="jumbotron">
+    <h3 align="center">The next match is on {{"{:%A, %d %b }".format(nextmatch.MatchDate)}} @
+        {{"{:%H:%M}".format(nextmatch.StartTime)}}
+        <br>
+        <small>We are playing <code>"{{nextmatch.OpposingTeam}}" </code>
+            {% if nextmatch.PlayOff == 'Y' %}
+                in the PLAYOFFS!
+            {% endif %}
+            {% if not current_user.is_anonymous %}
+            -
+            <a class="btn btn-default btn-xs"
+               title="show team history"
+               href="{{ url_for('main.team', team=nextmatch.OpposingTeam) }}">
+                History</a>
+            {% endif %}
+        </small>
+    </h3>
+    {% if results %}
+    <div class="table-responsive">
+        <table title="Live Score" class="table table-hover">
+            {% include '_scores.html' %}
+        </table>
+        <p align="center">Matches {{live.MatchUpsWon}} : {{live.MatchUpsLost}} -
+                            Racks {{live.RacksWon}} : {{live.RacksLost}} </p>
+    </div>
+    {% endif %}
+    {% if current_user.UserRole == 'Admin' or current_user.UserRole == 'Helper' %}
+    <div class="table-responsive">
+        <table class="table">
+            <tr>
+                <td align="left">
+                    <a class="btn btn-primary btn-xs" title="add head to head" href="{{ url_for('admin.addmatchup', matchid=nextmatch.idmatch) }}">
+                        Add Match Up</a>
+                </td>
+                {% if current_user.UserRole == 'Admin' and nextmatch.MatchOver != "Y" and inprogress == False %}
+                    <td align="center">
+                        <a class="btn btn-success btn-xs" title="complete match" href="{{ url_for('main.matchover', matchid=nextmatch.idmatch) }}">
+                            Match Over</a>
+                    </td>
+                {% endif %}
+                <td align="right">
+                    {% if current_user.UserRole == 'Admin' %}
+                        <a class="btn btn-danger btn-xs"
+                           title="delete this match"
+                           data-toggle="modal"
+                           data-target="#areyousureMatch">
+                            Delete Match</a>
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+    </div>
+    {% endif %}
+    <p align="center"><small>{{captainsMessage}}</small></p>
+</div>
+
+{% if current_user.UserRole == 'Admin' %}
+    <p align="center">
+        <a class="btn btn-success btn-xs glyphicon glyphicon-envelope" title="send weekly email" href="{{ url_for('email.sendemail') }}">
+            Email</a>
+    </p>
+{% endif %}
+
+
+<h2  class="text-muted" align="center"> The Bog of Eternal Stench</h2>
+<div class="table-responsive">
+
+    <table title="The Bog" class="table">
+        <th>Player</th>
+        <th>Avail</th>
+        <th>Lost On</th>
+        <th>Won On</th>
+        <th>Losses</th>
+        <th>Played</th>
+        <th>Bogged</th>
+        <th>Bogged On</th>
+        {% for player in players %}
+
+            {% if player.Bogged=='N' %}
+                <tr class="success">
+            {% else %}
+                <tr>
+            {% endif %}
+
+            {% if current_user.UserRole == 'Admin' %}
+                <td><a title="bog manager"
+                       class="btn btn-default btn-xs"
+                       href="{{ url_for('admin.bogman', playerid=player.idplayer) }}">
+                    <span class="glyphicon glyphicon-edit"></a>
+                    <a title="display player stats"
+                       class="tab"
+                       href="{{ url_for('main.history', player_id=player.idplayer) }}">
+                    {{player.Name}}</a>
+                </td>
+            {% else %}
+                <td><a title="display player stats"
+                       class="tab"
+                       href="{{ url_for('main.history', player_id=player.idplayer) }}">
+                    {{player.Name}}</a>
+                </td>
+            {% endif %}
+
+            <td>
+            {% if current_user.Player_ID == player.idplayer or current_user.UserRole == 'Admin' %}
+                {% if not player.idplayer in absent %}
+                    <a title="mark unavailable"
+                       class="btn btn-default btn-xs"
+                       href="{{ url_for('main.unavailable', playerid=player.idplayer,
+                       matchid=nextmatch.idmatch, seasonid=season.idseason, player=player.Name) }}">
+                        <span class="glyphicon glyphicon-ok" style="color:mediumseagreen">
+                    </a>
+                {% else %}
+                    <a title="mark available"
+                       class="btn btn-default btn-xs"
+                       href="{{ url_for('main.available', availid=absent[player.idplayer], player=player.Name) }}">
+                        <span class="glyphicon glyphicon-remove" style="color:orange">
+                    </a>
+                {% endif %}
+            {% else %}
+                {% if not player.idplayer in absent %}
+                    <span class="glyphicon glyphicon-ok" style="color:mediumseagreen">
+                {% else %}
+                    <span class="glyphicon glyphicon-remove" style="color:orange">
+                {% endif %}
+            {% endif %}
+            </td>
+
+            <td>{{player.Lose}}</td>
+            <td>{{player.Win}}</td>
+            <td>{{player.Losses}}</td>
+            <td>{{player.Played}}</td>
+            <td>{{player.Bogged}}</td>
+            <td>{{player.BoggedDate}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+<hr>
+<div class="jumbotron">
+    <h4 align="center">Bog Rules:</h4>
+    <ol>
+        <li>Lose, and you enter the Bog</li>
+        <li>You won last week and have a spot but can't make it, you enter the Bog</li>
+        <li>In the bog but can't make it to claim your spot, you keep your place in the queue</li>
+    </ol>
+    <br>
+    <h4 align="center">How to exit the bog:</h4>
+    <ol>
+        <li>First in, first out - i.e. by date you enter the Bog</li>
+        <li>Least number of loses</li>
+        <li>Least number of matches</li>
+        <li>Captain's Discretion</li>
+    </ol>
+</div>
+
+{% if results %}
+    {% include '_areyousureMatch.html' %}
+{% else %}
+    {% include '_areyousureMatch_alt.html' %}
+{% endif %}
+
+{% endblock %}
+

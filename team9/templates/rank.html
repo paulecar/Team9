@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block app_content %}
+    <h1 class="text-muted" align="center"> Player Rankings - {{season}}</h1>
+    <div align="center">
+        <a title="view ranking for another season"
+               class="btn btn-default btn-xs"
+               href="{{ url_for('main.pickseason', pick='ranking') }}">
+            Change Season</a>
+    </div>
+    <h4 class="text-muted" align="center">Ranked by Matches Won</h4>
+    <div class="table-responsive">
+        <table title="Match Percentages" class="table table-striped">
+            {% include '_rankhdr.html' %}
+            <th>Match Pct<span class="glyphicon glyphicon-triangle-bottom"></th>
+            <th>Racks Pct</th>
+            <th>Act Pct</th>
+            {% for ranking in rankings1 %}
+                <tr>
+                {% include '_rankrow.html' %}
+                    <td>{{"{:.2%}".format(ranking.MatchPct)}}</td>
+                    <td>{{"{:.2%}".format(ranking.RacksPct)}}</td>
+                    <td>{{"{:.2%}".format(ranking.ActPct)}}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <br>
+    <h4 class="text-muted" align="center">Ranked by HCAP Racks Won</h4>
+    <div class="table-responsive">
+        <table title="Racks Won Percentages" class="table table-striped">
+            {% include '_rankhdr.html' %}
+            <th>Racks Pct<span class="glyphicon glyphicon-triangle-bottom"></th>
+            <th>Match Pct</th>
+            <th>Act Pct</th>
+            {% for ranking in rankings2 %}
+                <tr>
+                {% include '_rankrow.html' %}
+                    <td>{{"{:.2%}".format(ranking.RacksPct)}}</td>
+                    <td>{{"{:.2%}".format(ranking.MatchPct)}}</td>
+                    <td>{{"{:.2%}".format(ranking.ActPct)}}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <br>
+    <h4 class="text-muted" align="center">Ranked by Actual Racks Won (ignoring racks on the wire)</h4>
+    <div class="table-responsive">
+            <table title="Act Racks Won Percentages" class="table table-striped">
+            {% include '_rankhdr.html' %}
+            <th>Act Pct<span class="glyphicon glyphicon-triangle-bottom"></th>
+            <th>Match Pct</th>
+            <th>Racks Pct</th>
+        {% for ranking in rankings3 %}
+            <tr>
+            {% include '_rankrow.html' %}
+                <td>{{"{:.2%}".format(ranking.ActPct)}}</td>
+                <td>{{"{:.2%}".format(ranking.MatchPct)}}</td>
+                <td>{{"{:.2%}".format(ranking.RacksPct)}}</td>
+            </tr>
+        {% endfor %}
+        </table>
+    </div>
+{% endblock %}

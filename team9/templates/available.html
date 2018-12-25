@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block app_content %}
+    <h1 class="text-muted" align="center">Availability - {{season}}</h1>
+    <h4 class="text-muted" align="center">Upcoming Matches</h4>
+    <div class="table-responsive">
+        <table title="Upcoming matches" class="table table-striped">
+            <th>Opposing Team</th>
+            <th>Match Date - Time</th>
+            {% for player in players %}
+                <th>{{player['initials']}}</th>
+            {% endfor %}
+            {% for match in matches %}
+                {% if not match.Result %}
+                    <tr>
+                        <td><a class="tab"
+                               title="show team history"
+                               href="{{ url_for('main.team', team=match.Match.OpposingTeam) }}">
+                            {{match.Match.OpposingTeam}}</a>
+                        </td>
+                        <td>{{match.Match.MatchDate}} - {{"{:%H:%M}".format(match.Match.StartTime)}}</td>
+                        {% for a in avail[match.Match.idmatch] %}
+                            <td>
+                            {% if current_user.Player_ID == a['id'] or current_user.UserRole == 'Admin' %}
+                                {% if a['avail'] %}
+                                    <a title="mark unavailable"
+                                       class="btn btn-default btn-xs"
+                                       href="{{ url_for('main.unavailable', playerid=a['id'],
+                                       matchid=match.Match.idmatch, seasonid=seasonid, player=a['initials']) }}">
+                                        <span class="glyphicon glyphicon-ok" style="color:mediumseagreen">
+                                    </a>
+                                {% else %}
+                                    <a title="mark available"
+                                       class="btn btn-default btn-xs"
+                                       href="{{ url_for('main.available', availid=a['a_id'], player=a['initials']) }}">
+                                        <span class="glyphicon glyphicon-remove" style="color:orange">
+                                    </a>
+                                {% endif %}
+                            {% else %}
+                                {% if a['avail'] %}
+                                    <span class="glyphicon glyphicon-ok" style="color:mediumseagreen">
+                                {% else %}
+                                    <span class="glyphicon glyphicon-remove" style="color:orange">
+                                {% endif %}
+                            {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </table>
+    </div>
+
+{% endblock %}
+
