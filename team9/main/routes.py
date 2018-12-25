@@ -257,7 +257,7 @@ def team(team):
             match_inprogress = True
             break
 
-    return render_template('team.html', history=team_history, team=team, inprogress=match_inprogress)
+    return render_template('team.html', history=team_history, team=team, inprogress=match_inprogress, hcaps=hcaps)
 
 
 @bp.route('/opponent/<opp>')

@@ -4,23 +4,32 @@
     <h3 class="text-muted" align="center">Match Results</h3>
     <div class="table-responsive">
         <table title="Team History" class="table table-striped">
-            <th>Match Date</th>
-            <th>Play Off</th>
+            <th></th>
+            <th>Date (Play Off)</th>
             <th>Games</th>
             <th>Racks</th>
             <th>Result</th>
-            <th>Details</th>
-            <th colspan="3">Match Up Summary</th>
+            <th class="text-muted">Match Details..</th>
+            <th class="text-muted">Race</th>
+            <th class="text-muted">Score</th>
+            <th class="text-muted">Opponent</th>
             {% set ns = namespace(previous=0) %}
             {% for match in history %}
                 <tr>
                     {% if ns.previous != match.Match.idmatch %}
-                        <td>{{match.Match.MatchDate}}</td>
-                        {% if match.Match.PlayOff %}
-                            <td>{{match.Match.PlayOff}}</td>
-                        {% else %}
-                            <td></td>
-                        {% endif %}
+                        <td>
+                            {% if current_user.UserRole == 'Admin' %}
+                                <a title="edit match details"
+                                    class="btn btn-default btn-xs"
+                                    href="{{ url_for('main.matchresult', matchid=match.Match.idmatch) }}">
+                                    <span class="glyphicon glyphicon-edit"></a>
+                            {% endif %}
+                        </td>
+                        <td>{{match.Match.MatchDate}}
+                            {% if match.Match.PlayOff %}
+                                ({{match.Match.PlayOff}})
+                            {% endif %}
+                        </td>
                         <td>{{match.Result.MatchUpsWon}} : {{match.Result.MatchUpsLost}}</td>
                         <td>{{match.Result.RacksWon}} : {{match.Result.RacksLost}}</td>
                         {% if inprogress == True and ns.previous == 0 %}
@@ -30,13 +39,8 @@
                         {% else %}
                             <td><span class="label label-warning">LOSS</span></td>
                         {% endif %}
-                        <td><a class="btn btn-default btn-xs"
-                               title="show match up details"
-                               href="{{ url_for('main.matchresult', matchid=match.Match.idmatch) }}">
-                            Match Detail</a>
-                        </td>
                     {% else %}
-                        <td></td><td></td><td></td><td></td><td></td><td></td>
+                        <td></td><td></td><td></td><td></td><td></td>
                     {% endif %}
                     <td>
                         <a title="display player stats"
@@ -45,11 +49,18 @@
                         {{match.Player.FirstName}} {{match.Player.Surname}}</a>
                          ({{match.MatchUp.MyPlayerRank}})
                     </td>
+                        <td>{{'{} on {}'.format(hcaps[match.MatchUp.MyPlayerRank][match.MatchUp.OpponentRank][0],
+                                hcaps[match.MatchUp.MyPlayerRank][match.MatchUp.OpponentRank][1])}}
+                    </td>
                     <td>
                         {% if match.MatchUp.WinLose == "W" %}
-                            <span class="label label-success">WIN</span>
+                            <span class="label label-success">
+                                WIN {{match.MatchUp.MyPlayerScore}} : {{match.MatchUp.OpponentScore}}
+                            </span>
                         {% else %}
-                            <span class="label label-warning">LOSS</span>
+                            <span class="label label-warning">
+                                LOSS {{match.MatchUp.MyPlayerScore}} : {{match.MatchUp.OpponentScore}}
+                            </span>
                         {% endif %}
                     </td>
                     <td>
