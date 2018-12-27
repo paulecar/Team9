@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block navbar %}
-    <nav class="navbar navbar-inverse">
+    <nav class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
             <div class="navbar-header">
                 <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
@@ -34,7 +34,9 @@
                         <li><a href="{{ url_for('main.availability') }}"><span class="glyphicon glyphicon-calendar"> Availability</a></li>
                     {% endif %}
                     {% if current_user.UserRole == 'Admin' %}
-                      <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Admin<span class="caret"></span></a>
+                      <li class="dropdown">
+                          <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-wrench">
+                              Admin<span class="caret"></span></a>
                         <ul class="dropdown-menu">
                             <li><a href="{{ url_for('admin.addmatch') }}">Add Match</a></li>
                             <li><a href="{{ url_for('admin.addseason') }}">Add Season</a></li>
@@ -55,6 +57,7 @@
 {% endblock %}
 
 {% block content %}
+    <br><br><br><br>
     <div class="container">
         {% with messages = get_flashed_messages() %}
             {% if messages %}
