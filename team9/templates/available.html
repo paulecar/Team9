@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block app_content %}
-    <h1 class="text-muted" align="center">Availability - {{season}}</h1>
+    <h2 class="text-muted" align="center">Availability - {{season}}</h2>
     <h4 class="text-muted" align="center">Upcoming Matches</h4>
     <div class="table-responsive">
         <table title="Upcoming matches" class="table table-striped">
@@ -31,7 +31,8 @@
                                 {% else %}
                                     <a title="mark available"
                                        class="btn btn-default btn-xs"
-                                       href="{{ url_for('main.available', availid=a['a_id'], player=a['initials']) }}">
+                                       href="{{ url_for('main.available', availid=a['a_id'],
+                                       player=a['initials'], playerid=a['id']) }}">
                                         <span class="glyphicon glyphicon-remove" style="color:orange">
                                     </a>
                                 {% endif %}

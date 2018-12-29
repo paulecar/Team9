@@ -1,9 +1,10 @@
 {% extends "base.html" %}
 {% block app_content %}
-    <h1 class="text-muted" align="center">Player Lifetime History</h1>
+    <h2 class="text-muted" align="center">Player Lifetime History</h2>
     <h3 class="text-muted" align="center">Player Stats</h3>
     <div class="table-responsive">
     <table title="Summary" class="table table-striped">
+        <th></th>
         <th>Player</th>
         <th>Active</th>
         <th>Matches</th>
@@ -12,23 +13,19 @@
         <th>Rack Pct</th>
         {% for stats in summary %}
             <tr>
+                <td>
                 {% if current_user.UserRole == 'Admin' %}
-                    <td><a title="bog manager"
+                    <a title="bog manager"
                            class="btn btn-default btn-xs"
                            href="{{ url_for('admin.bogman', playerid=stats.idplayer) }}">
                         <span class="glyphicon glyphicon-edit"></a>
-                        <a title="display player stats"
-                           class="tab"
-                           href="{{ url_for('main.history', player_id=stats.idplayer) }}">
-                         {{stats.FirstName}} {{stats.Surname}}</a>
-                    </td>
-                {% else %}
-                    <td><a title="display player stats"
-                           class="tab"
-                           href="{{ url_for('main.history', player_id=stats.idplayer) }}">
-                         {{stats.FirstName}} {{stats.Surname}}</a>
-                    </td>
                 {% endif %}
+                </td>
+                <td><a title="display player stats"
+                       class="tab"
+                       href="{{ url_for('main.history', player_id=stats.idplayer) }}">
+                     {{stats.FirstName}} {{stats.Surname}}</a>
+                </td>
                 <td>{{stats.Active}}</td>
                 <td>{{stats.MatchesPlayed}}</td>
                 <td>{{"{:.2%}".format(stats.WinPct)}}</td>

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block app_content %}
-    <h1 class="text-muted" align="center">Player History - {{player.FirstName }} {{player.Surname}}</h1>
+    <h2 class="text-muted" align="center">Player History - {{player.FirstName }} {{player.Surname}}</h2>
 
     <h4 class="text-muted" align="center">Consolidated Summary</h4>
     <div class="table-responsive">
@@ -62,11 +62,11 @@
         {% for matchup in history %}
             <tr>
                 <td>{{matchup.Match.MatchDate}}</td>
-                {% if matchup.Match.Playoff == 'Y' %}
-                    <td>Y</td>
-                {% else %}
-                    <td></td>
-                {% endif %}
+                <td>
+                    {% if matchup.Match.PlayOff == 'Y' %}
+                        {{matchup.Match.PlayOff}}
+                    {% endif %}
+                </td>
                 <td>{{matchup.MatchUp.MyPlayerRank}}</td>
                 <td><a class="tab" title="show opponent history"
                        href="{{ url_for('main.opponent', opp=matchup.MatchUp.OpponentName) }}">

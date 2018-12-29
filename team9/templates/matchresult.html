@@ -2,14 +2,14 @@
 {% block app_content %}
 
     {% if current_user.UserRole == 'Admin' %}
-        <h1 class="bg-danger text-muted" align="center">Match Result</h1>
+        <h2 class="bg-warning text-muted" align="center">Match Result</h2>
     {% else %}
-        <h1 class="text-muted" align="center">Match Result</h1>
+        <h2 class="text-muted" align="center">Match Result</h2>
     {% endif %}
     {% if results %}
-        <h3>{{results[0].Match.MatchDate}} versus '{{results[0].Match.OpposingTeam}}'</h3>
+        <h4>{{results[0].Match.MatchDate}} versus '{{results[0].Match.OpposingTeam}}'</h4>
     {% else %}
-        <h3>No Scores Posted</h3>
+        <h4>No Scores Posted</h4>
     {% endif %}
     <div class="table-responsive">
         <table title="Results" class="table table-striped">

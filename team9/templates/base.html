@@ -29,7 +29,9 @@
                         <li><a href="{{ url_for('auth.logout') }}"><span class="glyphicon glyphicon-log-out"> Logout</a></li>
                         <li><a href="{{ url_for('main.results') }}"><span class="glyphicon glyphicon-dashboard"> Results</a></li>
                         <li><a href="{{ url_for('main.lifetime') }}"><span class="glyphicon glyphicon-user"> Players</a></li>
-                        <li><a href="{{ url_for('main.history') }}"><span class="glyphicon glyphicon-list"> Me</a></li>
+                        {% if current_user.Player_ID %}
+                            <li><a href="{{ url_for('main.history') }}"><span class="glyphicon glyphicon-list"> Me</a></li>
+                        {% endif %}
                         <li><a href="{{ url_for('main.ranking') }}"><span class="glyphicon glyphicon-sort-by-attributes"> Rankings</a></li>
                         <li><a href="{{ url_for('main.availability') }}"><span class="glyphicon glyphicon-calendar"> Availability</a></li>
                     {% endif %}
@@ -57,7 +59,7 @@
 {% endblock %}
 
 {% block content %}
-    <br><br><br><br>
+    <br><br><br><br><br><br>
     <div class="container">
         {% with messages = get_flashed_messages() %}
             {% if messages %}

@@ -2,18 +2,21 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-
-<h3 class="bg-danger text-muted">Upload Image</h1>
-
-<form action = "{{ url_for('admin.uploader') }}" method = "POST" enctype = "multipart/form-data">
-    {{ form.hidden_tag() }}
-    <div class="well">Please upload weekly image</div>
-    <input type = "file" name = "file" />
-    <hr>
-    <p>{{ form.submit(class_="btn btn-primary") }}</p>
-    <div class="well">
-        <img src="https://www.yourackdiscipline.com/static/{{image}}" class="img-thumbnail" width="25%" alt="Your Moment of Pool Zen">
+    <div class="row">
+        <div class="col-md-2"></div>
+        <div class="col-md-8">
+            <h4 class="bg-warning text-muted" align="center">Upload Image</h1>
+            <form action = "{{ url_for('admin.uploader') }}" method = "POST" enctype = "multipart/form-data">
+                {{ form.hidden_tag() }}
+                <div class="well">Please upload weekly image</div>
+                <input type = "file" name = "file" />
+                <hr>
+                <p>{{ form.submit(class_="btn btn-default") }}</p>
+                <div class="well">
+                    <img src="https://www.yourackdiscipline.com/static/{{image}}" class="img-thumbnail" width="25%" alt="Your Moment of Pool Zen">
+                </div>
+            </form>
+        </div>
+        <div class="col-md-2"></div>
     </div>
-</form>
-
 {% endblock %}

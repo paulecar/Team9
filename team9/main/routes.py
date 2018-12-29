@@ -55,6 +55,7 @@ def before_request():
 def index():
     # Get current season
     season = Season.query.filter_by(CurrentSeason='Y').first()
+    print(current_app.config['BOOTSTRAP_SERVE_LOCAL'])
 
     # TODO Consider removing views entirely and writing SQLALchemy query
     # Players query populates the Bog - query using 'execute' because 'the_bog' is a view
@@ -81,7 +82,7 @@ def index():
 
     # Current matchup details to display in progress match
     results = db.session.query(Player, MatchUp, Match).join(MatchUp, Player.idplayer == MatchUp.Player_ID). \
-        join(Match, Match.idmatch == MatchUp.Match_ID).filter_by(idmatch=nextmatch.idmatch).order_by(Player.FirstName).all()
+        join(Match, Match.idmatch == MatchUp.Match_ID).filter_by(idmatch=nextmatch.idmatch).order_by(Player.Surname).all()
 
     # Look for match in progress to determine whether to show the 'match over' button
     match_inprogress = False
@@ -102,39 +103,119 @@ def index():
                            hcaps=hcaps, inprogress=match_inprogress)
 
 
-@bp.route('/ranking')
-@bp.route('/ranking/<season_id>/<season_name>')
-def ranking(season_id=None, season_name=None):
-    # If no season is passed as argument - use the current season
-    if season_id is None:
-        # Get current season
-        season = Season.query.filter_by(CurrentSeason='Y').first()
-        query_season = season.idseason
-        display_season_name = season.SeasonName
-    else:
-        query_season = season_id
-        display_season_name = season_name
-
-    base_query = "SELECT * FROM AmsterdamTeam9.player_ranking WHERE idseason = {} ".format(query_season)
-
-    # TODO Consider removing views entirely and writing SQLALchemy query
-    # Three separate queries to satisfy sort order - 'execute' used because 'player_ranking' is a view
-    # This was probably done this way becuase I hadn't figured out how to use 'func' for calculated columns
-    rankings_matchpct = db.session.execute(base_query + "ORDER BY MatchPct Desc, RacksPct Desc, ActPct Desc").fetchall()
-    rankings_rackspct = db.session.execute(base_query + "ORDER BY RacksPct Desc, MatchPct Desc, ActPct Desc").fetchall()
-    rankings_actpct =   db.session.execute(base_query + "ORDER BY ActPct Desc, MatchPct Desc, RacksPct Desc").fetchall()
-    return render_template('rank.html',
-                           season=display_season_name,
-                           rankings1=rankings_matchpct,
-                           rankings2 = rankings_rackspct,
-                           rankings3 = rankings_actpct)
-
-
-@bp.route('/pickseason/<pick>')
+@bp.route('/availability')
 @login_required
-def pickseason(pick):
-    seasons = Season.query.order_by(Season.SeasonStart.asc()).all()
-    return render_template('pickseason.html', seasons=seasons, pick=pick)
+def availability():
+    # Get current season
+    season = Season.query.filter_by(CurrentSeason='Y').first()
+
+    matches = db.session.query(Match, Result).outerjoin(Result, Result.Match_ID == Match.idmatch). \
+        filter(Match.Season_ID == season.idseason).order_by(Match.MatchDate.asc()).all()
+
+    players = Player.query.filter_by(Active="Y").order_by(Player.Surname).all()
+    avail = Availability.query.filter_by(Season_ID=season.idseason).all()
+
+    player_list = []
+    for player in players:
+        player_list.append({'initials': player.FirstName[0] + player.Surname[0], 'id': player.idplayer, 'avail': True})
+
+    avail_map = {}
+    for m in matches:
+        if not m.Result:
+            avail_map[m.Match.idmatch] = copy.deepcopy(player_list)
+            for p in avail_map[m.Match.idmatch]:
+                for a in avail:
+                    if a.Match_ID == m.Match.idmatch and a.Player_ID == p['id']:
+                        p['avail'] = False
+                        p['a_id'] = a.idavailability
+
+    return render_template('available.html', matches=matches, season=season.SeasonName,
+                           players=player_list, avail=avail_map, seasonid=season.idseason)
+
+
+@bp.route('/available/<availid>/<player>/<playerid>')
+@login_required
+def available(availid, player, playerid):
+    if current_user.UserRole != 'Admin' and current_user.Player_ID != int(playerid):
+        return redirect(url_for('main.index'))
+
+    Availability.query.filter_by(idavailability=availid).delete()
+
+    flash('Availability for {} updated'.format(player))
+
+    db.session.commit()
+
+    # TODO Should be an explicit 'return' destination
+    if len(player) == 2:
+        target='main.availability'
+    else:
+        target='main.index'
+
+    return redirect(url_for(target))
+
+
+@bp.route('/deletematchup/<matchupid>/<matchid>', methods=['GET', 'POST'])
+@login_required
+def deletematchup(matchupid, matchid):
+    if current_user.UserRole != 'Admin' and current_user.UserRole != 'Helper':
+        return redirect(url_for('main.index'))
+
+    MatchUp.query.filter_by(idmatchup=matchupid).delete()
+
+    # TODO At some point, replace the trigger and fix this
+    # Delete and recreate an existing matchup to rebuild result
+    # - a sad hack rather than the effort of replacing the trigger
+    matchup = MatchUp.query.filter_by(Match_ID=matchid).first()
+
+    # If there's at least one matchup use it to trigger Result rebuild
+    if matchup:
+        # Build new MatchUp record
+        newmatchup = MatchUp(OpponentName=matchup.OpponentName,
+                             MyPlayerRank=matchup.MyPlayerRank,
+                             OpponentRank=matchup.OpponentRank,
+                             Player_ID=matchup.Player_ID,
+                             MatchUpRace=matchup.MatchUpRace,
+                             MyPlayerWire=matchup.MyPlayerWire,
+                             MyPlayerScore=matchup.MyPlayerScore,
+                             OpponentScore=matchup.OpponentScore,
+                             Match_ID=matchup.Match_ID,
+                             MyPlayerActual=matchup.MyPlayerActual,
+                             OpponentActual=matchup.OpponentActual,
+                             WinLose=matchup.WinLose)
+
+        MatchUp.query.filter_by(idmatchup=matchup.idmatchup).delete()
+        db.session.add(newmatchup)
+
+    # If not, just delete the Result record
+    else:
+        Result.query.filter_by(Match_ID=matchid).delete()
+
+    flash('Match Up deleted - ID : {}. Match ID {}'.format(matchupid, matchid))
+
+    db.session.commit()
+
+    return redirect(url_for('main.index'))
+
+
+@bp.route('/drilldown/<player_id>/<season_id>/<win_loss>')
+@login_required
+def drilldown(player_id=None, season_id=None, win_loss=None):
+    if player_id is None or season_id is None or win_loss is None:
+        return redirect(url_for('main.index'))
+
+    if player_id:
+        p = player_id
+    else:
+        p = current_user.Player_ID
+
+    player = Player.query.filter_by(idplayer=p).first()
+
+    select_history = db.session.query(Match, MatchUp). \
+        join(MatchUp, Match.idmatch == MatchUp.Match_ID). \
+        filter(MatchUp.Player_ID == player_id, Match.Season_ID == season_id, MatchUp.WinLose == win_loss). \
+        order_by(Match.MatchDate).all()
+
+    return render_template('drilldown.html', history=select_history, player=player)
 
 
 @bp.route('/history')
@@ -214,50 +295,82 @@ def history(player_id=None):
     player_history = db.session.query(Match, MatchUp). \
         join(MatchUp, Match.idmatch == MatchUp.Match_ID). \
         filter(MatchUp.Player_ID == p). \
-        order_by(Match.MatchDate).all()
+        order_by(Match.MatchDate.desc()).all()
 
     return render_template('history.html', history=player_history, player=player, details=player_detail,
                            summary=player_summary, chart=chart)
 
 
-@bp.route('/drilldown/<player_id>/<season_id>/<win_loss>')
+@bp.route('/lifetime')
 @login_required
-def drilldown(player_id=None, season_id=None, win_loss=None):
-    if player_id is None or season_id is None or win_loss is None:
+def lifetime():
+    player_summary = db.session.query(Player.idplayer, Player.FirstName, Player.Surname, Player.Active,
+                  func.count(MatchUp.idmatchup).label('MatchesPlayed'),
+                  func.sum(MatchUp.MyPlayerActual).label('ActRacksWon'),
+                  func.sum(MatchUp.OpponentActual).label('ActRacksLost'),
+                  (func.sum(MatchUp.MyPlayerActual) / (func.sum(MatchUp.OpponentActual) + func.sum(MatchUp.MyPlayerActual))).label('RackPct'),
+                  (func.sum(func.IF(MatchUp.WinLose == 'W', 1, 0)) / func.count(MatchUp.WinLose)).label('WinPct')). \
+        join(MatchUp, MatchUp.Player_ID == Player.idplayer).order_by(Player.Surname).group_by(Player.idplayer).all()
+    return render_template('lifetime.html', summary=player_summary)
+
+
+@bp.route('/livescore/<matchupid>/<helper>', methods=['GET', 'POST'])
+@login_required
+def livescore(matchupid, helper):
+    if current_user.UserRole != 'Admin' and current_user.UserRole != 'Helper':
         return redirect(url_for('main.index'))
 
-    if player_id:
-        p = player_id
-    else:
-        p = current_user.Player_ID
+    # Get Current MatchUp for update
+    matchup = MatchUp.query.filter_by(idmatchup=matchupid).first()
+    match = Match.query.filter_by(idmatch=matchup.Match_ID).first()
+    ip = True
+    if match.MatchOver == "Y":
+        ip = False
+    form = LiveScore(playerscore=matchup.MyPlayerScore, opponentscore=matchup.OpponentScore,
+                     in_progress=ip, opponentrank=matchup.OpponentRank, playerrank=matchup.MyPlayerRank)
 
-    player = Player.query.filter_by(idplayer=p).first()
+    # Note: the in_progress flag simply modifies validation behaviour
+    # The value is NOT stored in the MatchUp table
+    if form.validate_on_submit():
 
-    select_history = db.session.query(Match, MatchUp). \
-        join(MatchUp, Match.idmatch == MatchUp.Match_ID). \
-        filter(MatchUp.Player_ID == player_id, Match.Season_ID == season_id, MatchUp.WinLose == win_loss). \
-        order_by(Match.MatchDate).all()
+        apply_MatchUpUpdates(matchup, form.playerscore.data, form.opponentscore.data, form.mathematical_elimination.data)
 
-    return render_template('drilldown.html', history=select_history, player=player)
+        flash('Updated MatchUp - Match versus {} is now {} : {}'.
+              format(matchup.OpponentName, form.playerscore.data, form.opponentscore.data))
+
+        # TODO Should be an explicit 'return' destination
+        # Using helper flag to indicate whether the livescore came from home page or match result page
+        if helper == "on":
+            return redirect(url_for('main.index'))
+        elif helper == "phone":
+            return redirect(url_for('main.phonescore'))
+        else:
+            return redirect(url_for('main.matchresult', matchid=matchup.Match_ID))
 
 
-@bp.route('/team/<team>')
+    # Renders on the GET of when the input does not validate
+    return render_template('livescore.html', title='Update Score', form=form, action='Update')
+
+
+@bp.route('/matchover/<matchid>', methods=['GET', 'POST'])
 @login_required
-def team(team):
-    team_history = db.session.query(Result, MatchUp, Player, Match).join(MatchUp, MatchUp.Match_ID == Result.Match_ID). \
-        join(Player, Player.idplayer == MatchUp.Player_ID).join(Match, Match.idmatch == MatchUp.Match_ID). \
-        filter_by(OpposingTeam=team).order_by(Match.MatchDate.desc(), MatchUp.idmatchup.asc()).all()
+def matchover(matchid):
+    if current_user.UserRole != 'Admin':
+        return redirect(url_for('main.index'))
 
-    # Check to see if latest match is still in progress
-    match_inprogress = False
-    for match in team_history:
-        if match.Match.idmatch != team_history[0].Match.idmatch:
-            break
-        if match.MatchUp.WinLose == "I":
-            match_inprogress = True
-            break
+    m = Match.query.filter_by(idmatch=matchid).first()
+    m.MatchOver = "Y"
+    db.session.commit()
+    flash('Match completed -  Match ID: {}'.format(matchid))
+    return redirect(url_for('main.index'))
 
-    return render_template('team.html', history=team_history, team=team, inprogress=match_inprogress, hcaps=hcaps)
+
+@bp.route('/matchresult/<matchid>')
+@login_required
+def matchresult(matchid):
+    results = db.session.query(Player, MatchUp, Match).join(MatchUp, Player.idplayer == MatchUp.Player_ID). \
+        join(Match, Match.idmatch == MatchUp.Match_ID).order_by(Player.Surname).filter_by(idmatch=matchid).all()
+    return render_template('matchresult.html', results=results, helper_role="off", hcaps=hcaps)
 
 
 @bp.route('/opponent/<opp>')
@@ -267,6 +380,73 @@ def opponent(opp):
         join(MatchUp, Match.idmatch == MatchUp.Match_ID).filter_by(OpponentName=opp). \
         join(Player, Player.idplayer == MatchUp.Player_ID).order_by(Match.MatchDate.desc()).all();
     return render_template('opponent.html', history=opp_history, opp=opp)
+
+
+@bp.route('/phonescore/')
+@login_required
+def phonescore():
+    if current_user.UserRole != 'Admin' and current_user.UserRole != 'Helper':
+        return redirect(url_for('main.index'))
+
+    # Nextmatch - speaks for itself
+    nextmatch = Match.query.order_by(Match.MatchDate.asc(), Match.StartTime.asc()).\
+        filter(Match.MatchOver == None).first()
+
+    # Check to see we have a current/future match, otherwise look for the last match
+    if not nextmatch:
+        nextmatch = Match.query.order_by(Match.MatchDate.desc(), Match.StartTime.desc()).first()
+
+    # Current matchup details to display in progress match
+    results = db.session.query(Player, MatchUp, Match).join(MatchUp, Player.idplayer == MatchUp.Player_ID). \
+        join(Match, Match.idmatch == MatchUp.Match_ID).filter_by(idmatch=nextmatch.idmatch).order_by(Player.Surname).all()
+
+    # Look for match in progress to determine whether to show the 'match over' button
+    match_inprogress = False
+
+    for matchup in results:
+        if matchup.MatchUp.WinLose == "I":
+            match_inprogress = True
+
+    # Used for tacking live scores
+    live = db.session.query(Result).filter_by(Match_ID=nextmatch.idmatch).first()
+
+    return render_template('phonescore.html', title='Phone Scoring', nextmatch=nextmatch, live=live,
+                           results=results, hcaps=hcaps, inprogress=match_inprogress)
+
+
+@bp.route('/pickseason/<pick>')
+@login_required
+def pickseason(pick):
+    seasons = Season.query.order_by(Season.SeasonStart.asc()).all()
+    return render_template('pickseason.html', seasons=seasons, pick=pick)
+
+
+@bp.route('/ranking')
+@bp.route('/ranking/<season_id>/<season_name>')
+def ranking(season_id=None, season_name=None):
+    # If no season is passed as argument - use the current season
+    if season_id is None:
+        # Get current season
+        season = Season.query.filter_by(CurrentSeason='Y').first()
+        query_season = season.idseason
+        display_season_name = season.SeasonName
+    else:
+        query_season = season_id
+        display_season_name = season_name
+
+    base_query = "SELECT * FROM AmsterdamTeam9.player_ranking WHERE idseason = {} ".format(query_season)
+
+    # TODO Consider removing views entirely and writing SQLALchemy query
+    # Three separate queries to satisfy sort order - 'execute' used because 'player_ranking' is a view
+    # This was probably done this way becuase I hadn't figured out how to use 'func' for calculated columns
+    rankings_matchpct = db.session.execute(base_query + "ORDER BY MatchPct Desc, RacksPct Desc, ActPct Desc").fetchall()
+    rankings_rackspct = db.session.execute(base_query + "ORDER BY RacksPct Desc, MatchPct Desc, ActPct Desc").fetchall()
+    rankings_actpct =   db.session.execute(base_query + "ORDER BY ActPct Desc, MatchPct Desc, RacksPct Desc").fetchall()
+    return render_template('rank.html',
+                           season=display_season_name,
+                           rankings1=rankings_matchpct,
+                           rankings2 = rankings_rackspct,
+                           rankings3 = rankings_actpct)
 
 
 @bp.route('/results')
@@ -321,56 +501,31 @@ def results(season_id=None, season_name=None):
     return render_template('results.html', matches=matches, season=display_season_name, chart=chart, info=season_info)
 
 
-@bp.route('/availability')
+@bp.route('/team/<team>')
 @login_required
-def availability():
-    # Get current season
-    season = Season.query.filter_by(CurrentSeason='Y').first()
+def team(team):
+    team_history = db.session.query(Result, MatchUp, Player, Match).join(MatchUp, MatchUp.Match_ID == Result.Match_ID). \
+        join(Player, Player.idplayer == MatchUp.Player_ID).join(Match, Match.idmatch == MatchUp.Match_ID). \
+        filter_by(OpposingTeam=team).order_by(Match.MatchDate.desc(), MatchUp.idmatchup.asc()).all()
 
-    matches = db.session.query(Match, Result).outerjoin(Result, Result.Match_ID == Match.idmatch). \
-        filter(Match.Season_ID == season.idseason).order_by(Match.MatchDate.asc()).all()
+    # Check to see if latest match is still in progress
+    match_inprogress = False
+    for match in team_history:
+        if match.Match.idmatch != team_history[0].Match.idmatch:
+            break
+        if match.MatchUp.WinLose == "I":
+            match_inprogress = True
+            break
 
-    players = Player.query.filter_by(Active="Y").order_by(Player.Surname).all()
-    avail = Availability.query.filter_by(Season_ID=season.idseason).all()
-
-    player_list = []
-    for player in players:
-        player_list.append({'initials': player.FirstName[0] + player.Surname[0], 'id': player.idplayer, 'avail': True})
-
-    avail_map = {}
-    for m in matches:
-        if not m.Result:
-            avail_map[m.Match.idmatch] = copy.deepcopy(player_list)
-            for p in avail_map[m.Match.idmatch]:
-                for a in avail:
-                    if a.Match_ID == m.Match.idmatch and a.Player_ID == p['id']:
-                        p['avail'] = False
-                        p['a_id'] = a.idavailability
-
-    return render_template('available.html', matches=matches, season=season.SeasonName,
-                           players=player_list, avail=avail_map, seasonid=season.idseason)
-
-
-@bp.route('/available/<availid>/<player>')
-@login_required
-def available(availid, player):
-    Availability.query.filter_by(idavailability=availid).delete()
-
-    flash('Availability for {} updated'.format(player))
-
-    db.session.commit()
-
-    if len(player) == 2:
-        target='main.availability'
-    else:
-        target='main.index'
-
-    return redirect(url_for(target))
+    return render_template('team.html', history=team_history, team=team, inprogress=match_inprogress, hcaps=hcaps)
 
 
 @bp.route('/unavailable/<playerid>/<matchid>/<seasonid>/<player>')
 @login_required
 def unavailable(playerid, matchid, seasonid, player):
+    if current_user.UserRole != 'Admin' and current_user.Player_ID != int(playerid):
+        return redirect(url_for('main.index'))
+
     avail = Availability(Match_ID=matchid, Player_ID=playerid, Season_ID=seasonid)
     db.session.add(avail)
 
@@ -378,6 +533,8 @@ def unavailable(playerid, matchid, seasonid, player):
 
     db.session.commit()
 
+    # TODO Should be an explicit 'return' destination
+    # Length of player identity determines where we came from
     if len(player) == 2:
         target='main.availability'
     else:
@@ -386,65 +543,10 @@ def unavailable(playerid, matchid, seasonid, player):
     return redirect(url_for(target))
 
 
-@bp.route('/lifetime')
-@login_required
-def lifetime():
-    player_summary = db.session.query(Player.idplayer, Player.FirstName, Player.Surname, Player.Active,
-                  func.count(MatchUp.idmatchup).label('MatchesPlayed'),
-                  func.sum(MatchUp.MyPlayerActual).label('ActRacksWon'),
-                  func.sum(MatchUp.OpponentActual).label('ActRacksLost'),
-                  (func.sum(MatchUp.MyPlayerActual) / (func.sum(MatchUp.OpponentActual) + func.sum(MatchUp.MyPlayerActual))).label('RackPct'),
-                  (func.sum(func.IF(MatchUp.WinLose == 'W', 1, 0)) / func.count(MatchUp.WinLose)).label('WinPct')). \
-        join(MatchUp, MatchUp.Player_ID == Player.idplayer).group_by(Player.idplayer).all()
-    return render_template('lifetime.html', summary=player_summary)
-
-
-@bp.route('/matchresult/<matchid>')
-@login_required
-def matchresult(matchid):
-    results = db.session.query(Player, MatchUp, Match).join(MatchUp, Player.idplayer == MatchUp.Player_ID). \
-        join(Match, Match.idmatch == MatchUp.Match_ID).filter_by(idmatch=matchid).all()
-    return render_template('matchresult.html', results=results, helper_role="off", hcaps=hcaps)
-
-
-@bp.route('/livescore/<matchupid>/<helper>', methods=['GET', 'POST'])
-@login_required
-def livescore(matchupid, helper):
-    if current_user.UserRole != 'Admin' and current_user.UserRole != 'Helper':
-        return redirect(url_for('main.index'))
-
-    # Get Current MatchUp for update
-    matchup = MatchUp.query.filter_by(idmatchup=matchupid).first()
-    match = Match.query.filter_by(idmatch=matchup.Match_ID).first()
-    ip = True
-    if match.MatchOver == "Y":
-        ip = False
-    form = LiveScore(playerscore=matchup.MyPlayerScore, opponentscore=matchup.OpponentScore,
-                     in_progress=ip, opponentrank=matchup.OpponentRank, playerrank=matchup.MyPlayerRank)
-
-    # Note: the in_progress flag simply modifies validation behaviour
-    # The value is NOT stored in the MatchUp table
-    if form.validate_on_submit():
-
-        apply_MatchUpUpdates(matchup, form.playerscore.data, form.opponentscore.data, form.mathematical_elimination.data)
-
-        flash('Updated MatchUp - Match versus {} is now {} : {}'.
-              format(matchup.OpponentName, form.playerscore.data, form.opponentscore.data))
-
-        # Using helper flag to indicate whether the livescore came from home page or match result page
-        if helper == "on":
-            return redirect(url_for('main.index'))
-        else:
-            return redirect(url_for('main.matchresult', matchid=matchup.Match_ID))
-
-
-    # Renders on the GET of when the input does not validate
-    return render_template('livescore.html', title='Update Score', form=form, action='Update')
-
-
 @bp.route('/updatematchup/<matchupid>/<player>', methods=['GET', 'POST'])
+@bp.route('/updatematchup/<matchupid>/<player>/<helper>', methods=['GET', 'POST'])
 @login_required
-def updatematchup(matchupid, player):
+def updatematchup(matchupid, player, helper):
     if current_user.UserRole != 'Admin' and current_user.UserRole != 'Helper':
         return redirect(url_for('main.index'))
 
@@ -474,61 +576,9 @@ def updatematchup(matchupid, player):
     flash('Score updated - Match versus {} - Score {}:{}'.
          format(opponentname, playerscore, opponentscore))
 
-    return redirect(url_for('main.index'))
-
-
-@bp.route('/deletematchup/<matchupid>/<matchid>', methods=['GET', 'POST'])
-@login_required
-def deletematchup(matchupid, matchid):
-    if current_user.UserRole != 'Admin' and current_user.UserRole != 'Helper':
-        return redirect(url_for('main.index'))
-
-    MatchUp.query.filter_by(idmatchup=matchupid).delete()
-
-    # TODO At some point, replace the trigger and fix this
-    # Delete and recreate an existing matchup to rebuild result
-    # - a sad hack rather than the effort of replacing the trigger
-    matchup = MatchUp.query.filter_by(Match_ID=matchid).first()
-
-    # If there's at least one matchup use it to trigger Result rebuild
-    if matchup:
-        # Build new MatchUp record
-        newmatchup = MatchUp(OpponentName=matchup.OpponentName,
-                             MyPlayerRank=matchup.MyPlayerRank,
-                             OpponentRank=matchup.OpponentRank,
-                             Player_ID=matchup.Player_ID,
-                             MatchUpRace=matchup.MatchUpRace,
-                             MyPlayerWire=matchup.MyPlayerWire,
-                             MyPlayerScore=matchup.MyPlayerScore,
-                             OpponentScore=matchup.OpponentScore,
-                             Match_ID=matchup.Match_ID,
-                             MyPlayerActual=matchup.MyPlayerActual,
-                             OpponentActual=matchup.OpponentActual,
-                             WinLose=matchup.WinLose)
-
-        MatchUp.query.filter_by(idmatchup=matchup.idmatchup).delete()
-        db.session.add(newmatchup)
-
-    # If not, just delete the Result record
+    # TODO Should be an explicit 'return' destination
+    # Using helper flag to indicate whether the livescore came from home page or phone result page
+    if helper:
+        return redirect(url_for('main.phonescore'))
     else:
-        Result.query.filter_by(Match_ID=matchid).delete()
-
-    flash('Match Up deleted - ID : {}. Match ID {}'.format(matchupid, matchid))
-
-    db.session.commit()
-
-    return redirect(url_for('main.index'))
-
-
-@bp.route('/matchover/<matchid>', methods=['GET', 'POST'])
-@login_required
-def matchover(matchid):
-    if current_user.UserRole != 'Admin':
         return redirect(url_for('main.index'))
-
-    m = Match.query.filter_by(idmatch=matchid).first()
-    m.MatchOver = "Y"
-    db.session.commit()
-    flash('Match completed -  Match ID: {}'.format(matchid))
-    return redirect(url_for('main.index'))
-

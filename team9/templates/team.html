@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block app_content %}
-    <h1 class="text-muted" align="center">Team History - {{team}}</h1>
-    <h3 class="text-muted" align="center">Match Results</h3>
+    <h2 class="text-muted" align="center">Team History - {{team}}</h2>
+    <h4 class="text-muted" align="center">Match Results</h4>
     <div class="table-responsive">
         <table title="Team History" class="table table-striped">
             <th></th>
@@ -30,7 +30,7 @@
                             {{match.Match.MatchDate}}
                         </td>
                         <td>
-                            {% if match.Match.PlayOff %}
+                            {% if match.Match.PlayOff == 'Y' %}
                                 {{match.Match.PlayOff}}
                             {% endif %}
                         </td>

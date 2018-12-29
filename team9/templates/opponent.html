@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block app_content %}
-    <h1 class="text-muted" align="center"> Opponent History - {{opp}}</h1>
+    <h2 class="text-muted" align="center"> Opponent History - {{opp}}</h2>
     <div class="table-responsive">
         <table title="Team History" class="table table-hover">
             <th>Match Date</th>
@@ -19,11 +19,11 @@
                         {{match.Match.OpposingTeam}}
                     </a>
                 </td>
-                {% if match.Match.PlayOff %}
-                    <td>{{match.Match.PlayOff}}</td>
-                {% else %}
-                    <td></td>
-                {% endif %}
+                <td>
+                    {% if match.Match.PlayOff == 'Y' %}
+                        {{match.Match.PlayOff}}
+                    {% endif %}
+                </td>
                 <td>{{match.MatchUp.OpponentRank}}</td>
                 <td><a title="display player stats"
                        class="tab"

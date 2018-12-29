@@ -1,8 +1,11 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-<h1 class="text-muted" align="center"> Amsterdam Team 9 Ball League<br>{{season.SeasonName}}</h1>
+<h2 class="text-muted" align="center"> Amsterdam Team 9 Ball League<br>{{season.SeasonName}}</h2>
 <div class="jumbotron">
+    <p align="right">
+    <a class="btn btn-info btn-xs glyphicon glyphicon-phone" title="Phone Updates" href="{{ url_for('main.phonescore') }}"></a>
+    </p>
     <h3 align="center">The next match is on {{"{:%A, %d %b }".format(nextmatch.MatchDate)}} @
         {{"{:%H:%M}".format(nextmatch.StartTime)}}
         <br>
@@ -76,8 +79,11 @@
         <th>Won On</th>
         <th>Losses</th>
         <th>Played</th>
-        <th>Bogged</th>
+        {% if current_user.UserRole == 'Admin' %}
+            <th>Bogged</th>
+        {% endif %}
         <th>Bogged On</th>
+        <th></th>
         {% for player in players %}
 
             {% if player.Bogged=='N' %}
@@ -86,55 +92,67 @@
                 <tr>
             {% endif %}
 
-            {% if current_user.UserRole == 'Admin' %}
-                <td><a title="bog manager"
-                       class="btn btn-default btn-xs"
-                       href="{{ url_for('admin.bogman', playerid=player.idplayer) }}">
-                    <span class="glyphicon glyphicon-edit"></a>
-                    <a title="display player stats"
-                       class="tab"
-                       href="{{ url_for('main.history', player_id=player.idplayer) }}">
-                    {{player.Name}}</a>
-                </td>
-            {% else %}
-                <td><a title="display player stats"
-                       class="tab"
-                       href="{{ url_for('main.history', player_id=player.idplayer) }}">
-                    {{player.Name}}</a>
-                </td>
-            {% endif %}
-
             <td>
-            {% if current_user.Player_ID == player.idplayer or current_user.UserRole == 'Admin' %}
-                {% if not player.idplayer in absent %}
-                    <a title="mark unavailable"
-                       class="btn btn-default btn-xs"
-                       href="{{ url_for('main.unavailable', playerid=player.idplayer,
-                       matchid=nextmatch.idmatch, seasonid=season.idseason, player=player.Name) }}">
-                        <span class="glyphicon glyphicon-ok" style="color:mediumseagreen">
-                    </a>
-                {% else %}
-                    <a title="mark available"
-                       class="btn btn-default btn-xs"
-                       href="{{ url_for('main.available', availid=absent[player.idplayer], player=player.Name) }}">
-                        <span class="glyphicon glyphicon-remove" style="color:orange">
-                    </a>
-                {% endif %}
-            {% else %}
-                {% if not player.idplayer in absent %}
-                    <span class="glyphicon glyphicon-ok" style="color:mediumseagreen">
-                {% else %}
-                    <span class="glyphicon glyphicon-remove" style="color:orange">
-                {% endif %}
-            {% endif %}
+                <a title="display player stats"
+                   class="tab"
+                   href="{{ url_for('main.history', player_id=player.idplayer) }}">
+                {{player.Name}}</a>
             </td>
-
+            <td>
+                {% if current_user.Player_ID == player.idplayer or current_user.UserRole == 'Admin' %}
+                    {% if not player.idplayer in absent %}
+                        <a title="mark unavailable"
+                           class="btn btn-default btn-xs"
+                           href="{{ url_for('main.unavailable', playerid=player.idplayer,
+                           matchid=nextmatch.idmatch, seasonid=season.idseason, player=player.Name) }}">
+                            <span class="glyphicon glyphicon-ok" style="color:mediumseagreen">
+                        </a>
+                    {% else %}
+                        <a title="mark available"
+                           class="btn btn-default btn-xs"
+                           href="{{ url_for('main.available', availid=absent[player.idplayer],
+                           player=player.Name, playerid=player.idplayer) }}">
+                            <span class="glyphicon glyphicon-remove" style="color:orange">
+                        </a>
+                    {% endif %}
+                {% else %}
+                    {% if not player.idplayer in absent %}
+                        <span class="glyphicon glyphicon-ok" style="color:mediumseagreen">
+                    {% else %}
+                        <span class="glyphicon glyphicon-remove" style="color:orange">
+                    {% endif %}
+                {% endif %}
+            </td>
             <td>{{player.Lose}}</td>
             <td>{{player.Win}}</td>
             <td>{{player.Losses}}</td>
             <td>{{player.Played}}</td>
-            <td>{{player.Bogged}}</td>
+            {% if current_user.UserRole == 'Admin' %}
+                <td>
+                    {% if player.Bogged == 'Y' %}
+                        <a title="mark unbogged"
+                           class="btn btn-default btn-xs"
+                           href="{{ url_for('admin.bogger', playerid=player.idplayer) }}">
+                            <span class="glyphicon glyphicon-ok" style="color:mediumseagreen">
+                        </a>
+                    {% else %}
+                        <a title="mark bogged"
+                           class="btn btn-default btn-xs"
+                           href="{{ url_for('admin.bogger', playerid=player.idplayer) }}">
+                            <span class="glyphicon glyphicon-remove" style="color:orange">
+                        </a>
+                    {% endif %}
+                </td>
+            {% endif %}
             <td>{{player.BoggedDate}}</td>
+            <td>
+            {% if current_user.UserRole == 'Admin' %}
+                <a title="bog manager"
+                       class="btn btn-default btn-xs"
+                       href="{{ url_for('admin.bogman', playerid=player.idplayer) }}">
+                    <span class="glyphicon glyphicon-edit"></a>
+            {% endif %}
+            </td>
         </tr>
         {% endfor %}
     </table>

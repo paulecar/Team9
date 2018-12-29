@@ -7,6 +7,23 @@ from team9.models import Player, User, Match
 from team9utils import kvmSet, kvmGet
 
 
+@bp.route('/message', methods=['GET', 'POST'])
+@login_required
+def message():
+    if current_user.UserRole != 'Admin':
+        return redirect(url_for('main.index'))
+
+    form=Message()
+    current_message = kvmGet('CAPTAINSMESSAGE')
+
+    if form.validate_on_submit():
+        kvmSet('CAPTAINSMESSAGE', form.weekly_message.data)
+        flash('Email message set : {}'.format(form.weekly_message.data))
+        return redirect(url_for('main.index'))
+
+    return render_template('email/message.html', title='Update Email Message', form=form, current_message=current_message)
+
+
 @bp.route('/sendemail')
 @login_required
 def sendemail():
@@ -47,19 +64,3 @@ def sendemail():
 
     return redirect(url_for('main.index'))
 
-
-@bp.route('/message', methods=['GET', 'POST'])
-@login_required
-def message():
-    if current_user.UserRole != 'Admin':
-        return redirect(url_for('main.index'))
-
-    form=Message()
-    current_message = kvmGet('CAPTAINSMESSAGE')
-
-    if form.validate_on_submit():
-        kvmSet('CAPTAINSMESSAGE', form.weekly_message.data)
-        flash('Email message set : {}'.format(form.weekly_message.data))
-        return redirect(url_for('main.index'))
-
-    return render_template('email/message.html', title='Update Email Message', form=form, current_message=current_message)

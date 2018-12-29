@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block app_content %}
-    <h1 class="text-muted" align="center">Season Results - {{season}}</h1>
+    <h2 class="text-muted" align="center">Season Results - {{season}}</h2>
     <div align="center">
         <a title="view results for another season"
                class="btn btn-default btn-xs"
@@ -54,11 +54,11 @@
                             {{match.Match.OpposingTeam}}</a>
                         </td>
                         <td>{{match.Match.MatchDate}}</td>
-                        {% if match.Match.PlayOff == "Y" %}
-                            <td>{{match.Match.PlayOff}}</td>
-                        {% else %}
-                            <td></td>
-                        {% endif %}
+                        <td>
+                            {% if match.Match.PlayOff == 'Y' %}
+                                {{match.Match.PlayOff}}
+                            {% endif %}
+                        </td>
                         <td>{{match.Result.MatchUpsWon}} : {{match.Result.MatchUpsLost}}</td>
                         <td>{{match.Result.RacksWon}} : {{match.Result.RacksLost}}</td>
                         <td>
@@ -98,11 +98,11 @@
                         </td>
                         <td>{{match.Match.MatchDate}}</td>
                         <td>{{"{:%H:%M}".format(match.Match.StartTime)}}</td>
-                        {% if match.Match.PlayOff == "Y" %}
-                            <td>{{match.Match.PlayOff}}</td>
-                        {% else %}
-                            <td></td>
-                        {% endif %}
+                        <td>
+                            {% if match.Match.PlayOff == 'Y' %}
+                                {{match.Match.PlayOff}}
+                            {% endif %}
+                        </td>
                         {% if current_user.UserRole == 'Admin' %}
                             <td>
                                 <a class="btn btn-default btn-xs"

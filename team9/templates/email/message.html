@@ -2,15 +2,18 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-    <h3 class="bg-danger text-muted">Create Captain's Message</h3>
-    <div class="well">
-        The current message is:
-        <p class="bg-info">"{{current_message}}"</p>
-    </div>
-    <hr>
-    <div>
-        <div class="col-md-4">
+    <div class="row">
+        <br><br>
+        <div class="col-md-2"></div>
+        <div class="col-md-8">
+        <h4 class="bg-warning text-muted" align="center">Create Captain's Message</h4>
+        <div class="well">
+            The current message is:
+            <p class="text-info">"{{current_message}}"</p>
+        </div>
+            <hr>
             {{ wtf.quick_form(form) }}
         </div>
+        <div class="col-md-2"></div>
     </div>
 {% endblock %}

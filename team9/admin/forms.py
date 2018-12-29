@@ -11,7 +11,6 @@ from team9.main.forms import validateScore
 
 
 class AddMatch(FlaskForm):
-    # Pick list
     picks = []
     today = get_est()
     teampick = SelectField('Pick Team', choices=picks, coerce=int)
@@ -31,6 +30,7 @@ class AddMatch(FlaskForm):
 
 class UpdateMatch(FlaskForm):
     today = get_est()
+    opposingteam = StringField('Opposing Team')
     matchdate = DateField('Match Date', validators=[DateField], default=today.today(), format="%Y-%m-%d")
     starttime = TimeField('Start Time', validators=[TimeField])
     playoff = BooleanField('Playoff Match', default=False)
@@ -38,10 +38,8 @@ class UpdateMatch(FlaskForm):
     submit = SubmitField('Update Match')
 
     def validate_opposingteam(self, opposingteam):
-        # 0 means 'New team..'
-        if self.teampick.data == 0:
-            if len(self.opposingteam.data) == 0:
-                raise ValidationError('Select Opposing Team from list or Enter a team name in the text box.')
+        if len(self.opposingteam.data) == 0:
+            raise ValidationError('Enter a team name in the text box.')
 
 
 class AddSeason(FlaskForm):

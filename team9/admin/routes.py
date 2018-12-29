@@ -57,92 +57,6 @@ def addmatch():
     return render_template('admin/addmatch.html', title='Add Match', form=form)
 
 
-@bp.route('/deletematch/<matchid>', methods=['GET', 'POST'])
-@login_required
-def deletematch(matchid):
-    if current_user.UserRole != 'Admin':
-        return redirect(url_for('main.index'))
-
-    Availability.query.filter_by(Match_ID=matchid).delete()
-    Result.query.filter_by(Match_ID=matchid).delete()
-    MatchUp.query.filter_by(Match_ID=matchid).delete()
-    Match.query.filter_by(idmatch=matchid).delete()
-    db.session.commit()
-    flash('Match record and related results deleted for Match ID {}'.format(matchid))
-    return redirect(url_for('main.results'))
-
-
-@bp.route('/updatematch/<matchid>', methods=['GET', 'POST'])
-@login_required
-def updatematch(matchid):
-    if current_user.UserRole != 'Admin':
-        return redirect(url_for('main.index'))
-
-    # Get match and pre-populate values
-    match = Match.query.filter_by(idmatch=matchid).first()
-    playoff_val = False
-    if match.PlayOff == "Y":
-        playoff_val = True
-
-    form = UpdateMatch(matchdate=match.MatchDate, starttime=match.StartTime, playoff=playoff_val)
-
-
-    if form.validate_on_submit():
-        match = Match.query.filter_by(idmatch=matchid).first()
-        match.MatchDate = form.matchdate.data
-        match.StartTime = form.starttime.data
-        if form.playoff.data:
-            match.PlayOff = "Y"
-        else:
-            match.PlayOff = "N"
-        db.session.commit()
-        flash('Match {} against {} changed.'.format(match.idmatch, match.OpposingTeam))
-        return redirect(url_for('main.results'))
-    # Renders on the GET or when the input does not validate
-    return render_template('admin/updatematch.html', title='Update Match', form=form, )
-
-
-@bp.route('/addseason', methods=['GET', 'POST'])
-@login_required
-def addseason():
-    if current_user.UserRole != 'Admin':
-        return redirect(url_for('main.index'))
-    form = AddSeason()
-
-    if form.validate_on_submit():
-        newseason = Season(SeasonName=form.seasonname.data,
-                      SeasonStart=form.startdate.data,
-                      SeasonEnd=form.enddate.data,
-                      CurrentSeason=form.current.data)
-        db.session.add(newseason)
-        db.session.commit()
-        flash('Added new season {}, Starting : {} - Ending : {}'.
-              format(newseason.SeasonName, newseason.SeasonStart, newseason.SeasonEnd))
-        return redirect(url_for('main.index'))
-    # Renders on the GET of when the input does not validate
-    return render_template('admin/addseason.html', title='Add Season', form=form)
-
-
-@bp.route('/addplayer', methods=['GET', 'POST'])
-@login_required
-def addplayer():
-    if current_user.UserRole != 'Admin':
-        return redirect(url_for('main.index'))
-    form = AddPlayer()
-
-    if form.validate_on_submit():
-        newplayer = Player(Surname=form.surname.data,
-                      FirstName=form.firstname.data,
-                      Bogged='N',
-                      Active='Y')
-        db.session.add(newplayer)
-        db.session.commit()
-        flash('Added new player {} {}'.format(newplayer.FirstName, newplayer.Surname))
-        return redirect(url_for('main.index'))
-    # Renders on the GET of when the input does not validate
-    return render_template('admin/addplayer.html', title='Add Player', form=form)
-
-
 @bp.route('/addmatchup/<matchid>', methods=['GET', 'POST'])
 @login_required
 def addmatchup(matchid):
@@ -211,6 +125,66 @@ def addmatchup(matchid):
                            opposing_team=desc)
 
 
+@bp.route('/addplayer', methods=['GET', 'POST'])
+@login_required
+def addplayer():
+    if current_user.UserRole != 'Admin':
+        return redirect(url_for('main.index'))
+    form = AddPlayer()
+
+    if form.validate_on_submit():
+        newplayer = Player(Surname=form.surname.data,
+                      FirstName=form.firstname.data,
+                      Bogged='N',
+                      Active='Y')
+        db.session.add(newplayer)
+        db.session.commit()
+        flash('Added new player {} {}'.format(newplayer.FirstName, newplayer.Surname))
+        return redirect(url_for('main.index'))
+    # Renders on the GET of when the input does not validate
+    return render_template('admin/addplayer.html', title='Add Player', form=form)
+
+
+@bp.route('/addseason', methods=['GET', 'POST'])
+@login_required
+def addseason():
+    if current_user.UserRole != 'Admin':
+        return redirect(url_for('main.index'))
+    form = AddSeason()
+
+    if form.validate_on_submit():
+        newseason = Season(SeasonName=form.seasonname.data,
+                      SeasonStart=form.startdate.data,
+                      SeasonEnd=form.enddate.data,
+                      CurrentSeason=form.current.data)
+        db.session.add(newseason)
+        db.session.commit()
+        flash('Added new season {}, Starting : {} - Ending : {}'.
+              format(newseason.SeasonName, newseason.SeasonStart, newseason.SeasonEnd))
+        return redirect(url_for('main.index'))
+    # Renders on the GET of when the input does not validate
+    return render_template('admin/addseason.html', title='Add Season', form=form)
+
+
+@bp.route('/bogger/<playerid>', methods=['GET', 'POST'])
+@login_required
+def bogger(playerid):
+    if current_user.UserRole != 'Admin':
+        return redirect(url_for('main.index'))
+
+    player = Player.query.filter_by(idplayer=playerid).first()
+
+    if player.Bogged == "Y":
+        player.Bogged = "N"
+        flash('Player {} {} - UnBogged'.format(player.FirstName, player.Surname))
+    else:
+        player.Bogged = "Y"
+        flash('Player {} {} - Bogged'.format(player.FirstName, player.Surname))
+
+    db.session.commit()
+    return redirect(url_for('main.index'))
+
+
 @bp.route('/bogman/<playerid>', methods=['GET', 'POST'])
 @login_required
 def bogman(playerid):
@@ -236,6 +210,33 @@ def bogman(playerid):
         return redirect(url_for('main.index'))
     # Renders on the GET or when the input does not validate
     return render_template('admin/bogman.html', title='Bog Manager', form=form, player=playername)
+
+
+@bp.route('/deletematch/<matchid>', methods=['GET', 'POST'])
+@login_required
+def deletematch(matchid):
+    if current_user.UserRole != 'Admin':
+        return redirect(url_for('main.index'))
+
+    Availability.query.filter_by(Match_ID=matchid).delete()
+    Result.query.filter_by(Match_ID=matchid).delete()
+    MatchUp.query.filter_by(Match_ID=matchid).delete()
+    Match.query.filter_by(idmatch=matchid).delete()
+    db.session.commit()
+    flash('Match record and related results deleted for Match ID {}'.format(matchid))
+    return redirect(url_for('main.results'))
+
+
+@bp.route('/deleteuser/<userid>', methods=['GET', 'POST'])
+@login_required
+def deleteuser(userid):
+    if current_user.UserRole != 'Admin':
+        return redirect(url_for('main.index'))
+
+    User.query.filter_by(id=userid).delete()
+    db.session.commit()
+    flash('User deleted with ID {}'.format(userid))
+    return redirect(url_for('main.index'))
 
 
 @bp.route('/seasonlist')
@@ -271,61 +272,36 @@ def seasonman(id):
     return render_template('admin/seasonman.html', title='Season Update', form=form, season=season.SeasonName)
 
 
-@bp.route('/userlist')
+@bp.route('/updatematch/<matchid>', methods=['GET', 'POST'])
 @login_required
-def userlist():
-    if current_user.UserRole != 'Admin':
-        return redirect(url_for('main.index'))
-    users = User.query.outerjoin(Player, Player.idplayer == User.Player_ID). \
-        add_columns(User.id, User.UserName, User.Email, User.ConfCode, User.Verified, User.UserRole, User.last_seen,
-                    Player.FirstName, Player.Surname).all()
-    return render_template('admin/userlist.html', userlist=users)
-
-
-@bp.route('/userman/<id>', methods=['GET', 'POST'])
-@login_required
-def userman(id):
+def updatematch(matchid):
     if current_user.UserRole != 'Admin':
         return redirect(url_for('main.index'))
 
-    playernames = Player.query.filter_by(Active='Y').order_by(Player.Surname).all()
+    # Get match and pre-populate values
+    match = Match.query.filter_by(idmatch=matchid).first()
+    playoff_val = False
+    if match.PlayOff == "Y":
+        playoff_val = True
 
-    user = User.query.filter_by(id=id).first()
-    user_id = str(user.id) + " : " + user.UserName + " (" + user.Email + ")"
-
-    form = UserMan(userrole=user.UserRole, playerpick=user.Player_ID)
-    form.player.clear()
-    form.player.append((0, "Unlink"))
-    for playername in playernames:
-        form.player.append((playername.idplayer, playername.FirstName + ' ' + playername.Surname))
-
+    form = UpdateMatch(matchdate=match.MatchDate, starttime=match.StartTime, playoff=playoff_val, opposingteam=match.OpposingTeam)
 
     if form.validate_on_submit():
-        if form.playerpick.data == 0:
-            user.Player_ID = None
+        match = Match.query.filter_by(idmatch=matchid).first()
+
+        match.OpposingTeam = form.opposingteam.data
+        match.MatchDate = form.matchdate.data
+        match.StartTime = form.starttime.data
+        if form.playoff.data:
+            match.PlayOff = "Y"
         else:
-            user.Player_ID = form.playerpick.data
-        if form.userrole.data == "None":
-            user.UserRole = None
-        else:
-            user.UserRole = form.userrole.data
+            match.PlayOff = None
+
         db.session.commit()
-        flash('Player ID set for User : {} - Player : {} - Role : {}'.format(user_id, dict(form.player)[form.playerpick.data], user.UserRole))
-        return redirect(url_for('admin.userlist'))
-    # Renders on the GET of when the input does not validate
-    return render_template('admin/userman.html', title='User Manager', form=form, user=user_id)
-
-
-@bp.route('/deleteuser/<userid>', methods=['GET', 'POST'])
-@login_required
-def deleteuser(userid):
-    if current_user.UserRole != 'Admin':
-        return redirect(url_for('main.index'))
-
-    User.query.filter_by(id=userid).delete()
-    db.session.commit()
-    flash('User deleted with ID {}'.format(userid))
-    return redirect(url_for('main.index'))
+        flash('Match {} against {} changed.'.format(match.idmatch, match.OpposingTeam))
+        return redirect(url_for('main.results'))
+    # Renders on the GET or when the input does not validate
+    return render_template('admin/updatematch.html', title='Update Match', form=form, )
 
 
 @bp.route('/upload')
@@ -375,5 +351,46 @@ def uploader():
         return redirect(url_for('main.index'))
 
 
+@bp.route('/userlist')
+@login_required
+def userlist():
+    if current_user.UserRole != 'Admin':
+        return redirect(url_for('main.index'))
+    users = User.query.outerjoin(Player, Player.idplayer == User.Player_ID). \
+        add_columns(User.id, User.UserName, User.Email, User.ConfCode, User.Verified, User.UserRole, User.last_seen,
+                    Player.FirstName, Player.Surname).order_by(User.UserName).all()
+    return render_template('admin/userlist.html', userlist=users)
 
 
+@bp.route('/userman/<id>', methods=['GET', 'POST'])
+@login_required
+def userman(id):
+    if current_user.UserRole != 'Admin':
+        return redirect(url_for('main.index'))
+
+    playernames = Player.query.filter_by(Active='Y').order_by(Player.Surname).all()
+
+    user = User.query.filter_by(id=id).first()
+    user_id = str(user.id) + " : " + user.UserName + " (" + user.Email + ")"
+
+    form = UserMan(userrole=user.UserRole, playerpick=user.Player_ID)
+    form.player.clear()
+    form.player.append((0, "Unlink"))
+    for playername in playernames:
+        form.player.append((playername.idplayer, playername.FirstName + ' ' + playername.Surname))
+
+
+    if form.validate_on_submit():
+        if form.playerpick.data == 0:
+            user.Player_ID = None
+        else:
+            user.Player_ID = form.playerpick.data
+        if form.userrole.data == "None":
+            user.UserRole = None
+        else:
+            user.UserRole = form.userrole.data
+        db.session.commit()
+        flash('Player ID set for User : {} - Player : {} - Role : {}'.format(user_id, dict(form.player)[form.playerpick.data], user.UserRole))
+        return redirect(url_for('admin.userlist'))
+    # Renders on the GET of when the input does not validate
+    return render_template('admin/userman.html', title='User Manager', form=form, user=user_id)

@@ -15,11 +15,11 @@
         {% for matchup in history %}
             <tr>
                 <td>{{matchup.Match.MatchDate}}</td>
-                {% if matchup.Match.Playoff == 'Y' %}
-                    <td>Y</td>
-                {% else %}
-                    <td></td>
-                {% endif %}
+                <td>
+                    {% if matchup.Match.PlayOff == 'Y' %}
+                        {{matchup.Match.PlayOff}}
+                    {% endif %}
+                </td>
                 <td>{{matchup.MatchUp.MyPlayerRank}}</td>
                 <td><a class="tab" title="show opponent history"
                        href="{{ url_for('main.opponent', opp=matchup.MatchUp.OpponentName) }}">
