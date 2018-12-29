@@ -55,7 +55,6 @@ def before_request():
 def index():
     # Get current season
     season = Season.query.filter_by(CurrentSeason='Y').first()
-    print(current_app.config['BOOTSTRAP_SERVE_LOCAL'])
 
     # TODO Consider removing views entirely and writing SQLALchemy query
     # Players query populates the Bog - query using 'execute' because 'the_bog' is a view
@@ -546,7 +545,7 @@ def unavailable(playerid, matchid, seasonid, player):
 @bp.route('/updatematchup/<matchupid>/<player>', methods=['GET', 'POST'])
 @bp.route('/updatematchup/<matchupid>/<player>/<helper>', methods=['GET', 'POST'])
 @login_required
-def updatematchup(matchupid, player, helper):
+def updatematchup(matchupid, player, helper=None):
     if current_user.UserRole != 'Admin' and current_user.UserRole != 'Helper':
         return redirect(url_for('main.index'))
 
