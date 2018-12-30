@@ -201,12 +201,7 @@ def drilldown(player_id=None, season_id=None, win_loss=None):
     if player_id is None or season_id is None or win_loss is None:
         return redirect(url_for('main.index'))
 
-    if player_id:
-        p = player_id
-    else:
-        p = current_user.Player_ID
-
-    player = Player.query.filter_by(idplayer=p).first()
+    player = Player.query.filter_by(idplayer=player_id).first()
 
     select_history = db.session.query(Match, MatchUp). \
         join(MatchUp, Match.idmatch == MatchUp.Match_ID). \
@@ -414,26 +409,34 @@ def phonescore():
                            results=results, hcaps=hcaps, inprogress=match_inprogress, return_to=return_to, collapse=_collapse)
 
 
-@bp.route('/pickseason/<pick>')
+@bp.route('/pickseason')
 @login_required
-def pickseason(pick):
+def pickseason():
+
+    _return= request.args.get('return_to', default="main.index")
+
     seasons = Season.query.order_by(Season.SeasonStart.asc()).all()
-    return render_template('pickseason.html', seasons=seasons, pick=pick)
+    return render_template('pickseason.html', seasons=seasons, return_to=_return)
 
 
 @bp.route('/ranking')
-@bp.route('/ranking/<season_id>/<season_name>')
 def ranking(season_id=None, season_name=None):
+
+    _season = request.args.get('season_id', default=None)
+    return_to = 'main.ranking'
+
     # If no season is passed as argument - use the current season
-    if season_id is None:
+    if _season:
+        season = Season.query.filter_by(idseason=_season).first()
+        query_season = season.idseason
+        display_season_name = season.SeasonName
+    else:
         # Get current season
         season = Season.query.filter_by(CurrentSeason='Y').first()
         query_season = season.idseason
         display_season_name = season.SeasonName
-    else:
-        query_season = season_id
-        display_season_name = season_name
 
+    # TODO Another view to remove
     base_query = "SELECT * FROM AmsterdamTeam9.player_ranking WHERE idseason = {} ".format(query_season)
 
     # TODO Consider removing views entirely and writing SQLALchemy query
@@ -442,7 +445,7 @@ def ranking(season_id=None, season_name=None):
     rankings_matchpct = db.session.execute(base_query + "ORDER BY MatchPct Desc, RacksPct Desc, ActPct Desc").fetchall()
     rankings_rackspct = db.session.execute(base_query + "ORDER BY RacksPct Desc, MatchPct Desc, ActPct Desc").fetchall()
     rankings_actpct =   db.session.execute(base_query + "ORDER BY ActPct Desc, MatchPct Desc, RacksPct Desc").fetchall()
-    return render_template('rank.html',
+    return render_template('rank.html', return_to=return_to,
                            season=display_season_name,
                            rankings1=rankings_matchpct,
                            rankings2 = rankings_rackspct,
@@ -450,18 +453,21 @@ def ranking(season_id=None, season_name=None):
 
 
 @bp.route('/results')
-@bp.route('/results/<season_id>/<season_name>')
 @login_required
-def results(season_id=None, season_name=None):
+def results():
+    _season = request.args.get('season_id', default=None)
+    return_to = 'main.results'
+
     # If no season is passed as argument - use the current season
-    if season_id is None:
+    if _season:
+        season = Season.query.filter_by(idseason=_season).first()
+        query_season = season.idseason
+        display_season_name = season.SeasonName
+    else:
         # Get current season
         season = Season.query.filter_by(CurrentSeason='Y').first()
         query_season = season.idseason
         display_season_name = season.SeasonName
-    else:
-        query_season = season_id
-        display_season_name = season_name
 
     matches = db.session.query(Match, Result).outerjoin(Result, Result.Match_ID == Match.idmatch). \
         filter(Match.Season_ID == query_season).order_by(Match.MatchDate.asc()).all()
@@ -498,7 +504,7 @@ def results(season_id=None, season_name=None):
                   formatter = lambda x: "Loses {:.0%}({})".format(x/100, loses))
     chart = chart.render_data_uri()
 
-    return render_template('results.html', matches=matches, season=display_season_name, chart=chart, info=season_info)
+    return render_template('results.html', return_to=return_to, matches=matches, season=display_season_name, chart=chart, info=season_info)
 
 
 @bp.route('/team/<team>')

@@ -4,7 +4,7 @@
     <div align="center">
         <a title="view results for another season"
                class="btn btn-default btn-xs"
-               href="{{ url_for('main.pickseason', pick='results') }}">
+               href="{{ url_for('main.pickseason', return_to=return_to) }}">
             Change Season</a>
     </div>
     <div id="chart" align="center">
@@ -56,7 +56,7 @@
                         <td>{{match.Match.MatchDate}}</td>
                         <td>
                             {% if match.Match.PlayOff == 'Y' %}
-                                {{match.Match.PlayOff}}
+                                <span class="label label-info">PLAYOFF</span>
                             {% endif %}
                         </td>
                         <td>{{match.Result.MatchUpsWon}} : {{match.Result.MatchUpsLost}}</td>
@@ -100,7 +100,7 @@
                         <td>{{"{:%H:%M}".format(match.Match.StartTime)}}</td>
                         <td>
                             {% if match.Match.PlayOff == 'Y' %}
-                                {{match.Match.PlayOff}}
+                                <span class="label label-info">PLAYOFF</span>
                             {% endif %}
                         </td>
                         {% if current_user.UserRole == 'Admin' %}

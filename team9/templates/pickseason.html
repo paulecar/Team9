@@ -7,21 +7,12 @@
         <th>End</th>
         {% for season in seasons %}
             <tr>
-                {% if pick == "ranking" %}
-                    <td>
-                        <a title="select season"
-                           class="tab"
-                           href="{{ url_for('main.ranking', season_id=season.idseason, season_name=season.SeasonName) }}">
-                            {{season.SeasonName}}</a>
-                    </td>
-                {% else %}
-                    <td>
-                        <a title="select season"
-                           class="tab"
-                           href="{{ url_for('main.results', season_id=season.idseason, season_name=season.SeasonName) }}">
-                            {{season.SeasonName}}</a>
-                    </td>
-                {% endif %}
+                <td>
+                    <a title="select season"
+                       class="tab"
+                       href="{{ url_for(return_to, season_id=season.idseason) }}">
+                        {{season.SeasonName}}</a>
+                </td>
                 <td>{{season.SeasonStart}}</td>
                 <td>{{season.SeasonEnd}}</td>
             </tr>
