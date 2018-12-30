@@ -25,14 +25,15 @@
                                     <a title="mark unavailable"
                                        class="btn btn-default btn-xs"
                                        href="{{ url_for('main.unavailable', playerid=a['id'],
-                                       matchid=match.Match.idmatch, seasonid=seasonid, player=a['initials']) }}">
+                                       matchid=match.Match.idmatch, seasonid=seasonid,
+                                       player=a['initials'], return_to=return_to) }}">
                                         <span class="glyphicon glyphicon-ok" style="color:mediumseagreen">
                                     </a>
                                 {% else %}
                                     <a title="mark available"
                                        class="btn btn-default btn-xs"
                                        href="{{ url_for('main.available', availid=a['a_id'],
-                                       player=a['initials'], playerid=a['id']) }}">
+                                       player=a['initials'], playerid=a['id'], return_to=return_to) }}">
                                         <span class="glyphicon glyphicon-remove" style="color:orange">
                                     </a>
                                 {% endif %}

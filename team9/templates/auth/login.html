@@ -6,7 +6,7 @@
         <div class="col-md-2"></div>
         <div class="col-md-8">
             <h3 class="text-muted">Make Yourself Known to Me</h3>
-            {{ wtf.quick_form(form) }}
+            {{ wtf.quick_form(form, button_map={'submit':'info'}) }}
         <hr>
         <p>New User? <a href="{{ url_for('auth.register') }}">Click to Register!</a></p>
 

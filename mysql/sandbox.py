@@ -1,37 +1,20 @@
 from team9 import create_app
 team9 = create_app()
 team9.app_context().push()
-from team9 import db
-from team9.models import Season, Availability, Player, Match, Result
-import copy
+from flask_bootstrap import Bootstrap, bootstrap_find_resource
 
-season = Season.query.filter_by(CurrentSeason='Y').first()
+bootstrap = Bootstrap()
 
-matches = db.session.query(Match, Result).outerjoin(Result, Result.Match_ID == Match.idmatch). \
-    filter(Match.Season_ID == season.idseason).order_by(Match.MatchDate.asc()).all()
+print(bootstrap_find_resource('css/bootstrap.css', cdn='bootstrap', use_minified=True))
 
-players = Player.query.filter_by(Active="Y").order_by(Player.Surname).all()
-avail = Availability.query.filter_by(Season_ID=season.idseason).all()
+print(team9.extensions['bootstrap'], type(team9.extensions['bootstrap']))
 
-player_list = []
-for player in players:
-    player_list.append({'initials': player.FirstName[0] + player.Surname[0], 'id': player.idplayer, 'avail' : True})
+for k, v in team9.extensions['bootstrap']['cdns'].items():
+    print("Item:", k, v)
 
-print(avail)
-print(matches)
+team9.extensions['bootstrap']['cdns']['bootstrap'] = "//stackpath.bootstrapcdn.com/bootswatch/3.3.7/yeti/"
 
-avail_map={}
+cdns = team9.extensions['bootstrap']['cdns']
+resource_url = cdns['bootstrap'].get_resource_url('foo')
+print(resource_url)
 
-for m in matches:
-    if not m.Result:
-        avail_map[m.Match.idmatch] = copy.deepcopy(player_list)
-        for p in avail_map[m.Match.idmatch]:
-            for a in avail:
-                if a.Match_ID == m.Match.idmatch and a.Player_ID == p['id']:
-                    print("Bingo:", a.Match_ID, m.Match.idmatch, a.Player_ID, p['id'])
-                    p['avail'] = False
-                    p['a_id'] = a.idavailability
-
-print(player_list)
-for k, v in avail_map.items():
-    print(k, v)

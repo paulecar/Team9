@@ -12,8 +12,13 @@
 
     {%- block styles %}
     <!-- Local Bootstrap -->
-    <link href="//stackpath.bootstrapcdn.com/bootswatch/3.3.7/yeti/bootstrap.min.css" rel="stylesheet">
-    <!-- link href="{{bootstrap_find_resource('css/bootstrap.css', cdn='bootstrap')}}" rel="stylesheet" -->
+
+    {% if current_user.theme in ["cerulean", "cosmo", "cyborg", "darkly", "flatly", "journal", "lumen", "paper", "readable", "sandstone", "simplex", "slate", "spacelab", "superhero", "united"] %}
+      <link href="//stackpath.bootstrapcdn.com/bootswatch/3.3.7/{{current_user.theme}}/bootstrap.min.css" rel="stylesheet">
+    {% else %}
+      <link href="//stackpath.bootstrapcdn.com/bootswatch/3.3.7/yeti/bootstrap.min.css" rel="stylesheet">
+      <!-- link href="{{bootstrap_find_resource('css/bootstrap.css', cdn='bootstrap')}}" rel="stylesheet" -->
+    {% endif %}
     {%- endblock styles %}
     {%- endblock head %}
   </head>

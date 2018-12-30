@@ -1,4 +1,4 @@
-from flask import render_template, flash, redirect, url_for, current_app
+from flask import render_template, flash, redirect, url_for, current_app, request
 from team9 import db
 from team9.models import Player, Match, Season, MatchUp, Result, Availability
 from team9.main.forms import LiveScore
@@ -55,6 +55,7 @@ def before_request():
 def index():
     # Get current season
     season = Season.query.filter_by(CurrentSeason='Y').first()
+    return_to = 'main.index'
 
     # TODO Consider removing views entirely and writing SQLALchemy query
     # Players query populates the Bog - query using 'execute' because 'the_bog' is a view
@@ -99,7 +100,7 @@ def index():
                            players=players, nextmatch=nextmatch, absent=absent,
                            captainsMessage=kvmGet('CAPTAINSMESSAGE'),
                            results=results, live=live, helper_role="on",
-                           hcaps=hcaps, inprogress=match_inprogress)
+                           hcaps=hcaps, inprogress=match_inprogress, return_to=return_to)
 
 
 @bp.route('/availability')
@@ -107,6 +108,7 @@ def index():
 def availability():
     # Get current season
     season = Season.query.filter_by(CurrentSeason='Y').first()
+    return_to = 'main.availability'
 
     matches = db.session.query(Match, Result).outerjoin(Result, Result.Match_ID == Match.idmatch). \
         filter(Match.Season_ID == season.idseason).order_by(Match.MatchDate.asc()).all()
@@ -129,28 +131,25 @@ def availability():
                         p['a_id'] = a.idavailability
 
     return render_template('available.html', matches=matches, season=season.SeasonName,
-                           players=player_list, avail=avail_map, seasonid=season.idseason)
+                           players=player_list, avail=avail_map, seasonid=season.idseason, return_to=return_to)
 
 
-@bp.route('/available/<availid>/<player>/<playerid>')
+@bp.route('/available/<availid>/<playerid>')
 @login_required
-def available(availid, player, playerid):
+def available(availid, playerid):
     if current_user.UserRole != 'Admin' and current_user.Player_ID != int(playerid):
         return redirect(url_for('main.index'))
 
+    _return= request.args.get('return_to', default="main.index")
+    _player = request.args.get('player', default="Unknown")
+
     Availability.query.filter_by(idavailability=availid).delete()
 
-    flash('Availability for {} updated'.format(player))
+    flash('Availability for {} updated'.format(_player))
 
     db.session.commit()
 
-    # TODO Should be an explicit 'return' destination
-    if len(player) == 2:
-        target='main.availability'
-    else:
-        target='main.index'
-
-    return redirect(url_for(target))
+    return redirect(url_for(_return))
 
 
 @bp.route('/deletematchup/<matchupid>/<matchid>', methods=['GET', 'POST'])
@@ -218,14 +217,16 @@ def drilldown(player_id=None, season_id=None, win_loss=None):
 
 
 @bp.route('/history')
-@bp.route('/history/<player_id>')
 @login_required
-def history(player_id=None):
-    if current_user.Player_ID is None and player_id is None:
+def history():
+
+    _player_id = request.args.get('player_id', default=None)
+
+    if current_user.Player_ID is None and _player_id is None:
         return redirect(url_for('main.index'))
 
-    if player_id:
-        p = player_id
+    if _player_id:
+        p = _player_id
     else:
         p = current_user.Player_ID
 
@@ -313,11 +314,15 @@ def lifetime():
     return render_template('lifetime.html', summary=player_summary)
 
 
-@bp.route('/livescore/<matchupid>/<helper>', methods=['GET', 'POST'])
+@bp.route('/livescore/<matchupid>', methods=['GET', 'POST'])
 @login_required
-def livescore(matchupid, helper):
+def livescore(matchupid):
     if current_user.UserRole != 'Admin' and current_user.UserRole != 'Helper':
         return redirect(url_for('main.index'))
+
+    # Collapse needed when using phonescore
+    _collapse = request.args.get('collapse', default="Y")
+    _return= request.args.get('return_to', default="main.index")
 
     # Get Current MatchUp for update
     matchup = MatchUp.query.filter_by(idmatchup=matchupid).first()
@@ -328,8 +333,6 @@ def livescore(matchupid, helper):
     form = LiveScore(playerscore=matchup.MyPlayerScore, opponentscore=matchup.OpponentScore,
                      in_progress=ip, opponentrank=matchup.OpponentRank, playerrank=matchup.MyPlayerRank)
 
-    # Note: the in_progress flag simply modifies validation behaviour
-    # The value is NOT stored in the MatchUp table
     if form.validate_on_submit():
 
         apply_MatchUpUpdates(matchup, form.playerscore.data, form.opponentscore.data, form.mathematical_elimination.data)
@@ -337,17 +340,9 @@ def livescore(matchupid, helper):
         flash('Updated MatchUp - Match versus {} is now {} : {}'.
               format(matchup.OpponentName, form.playerscore.data, form.opponentscore.data))
 
-        # TODO Should be an explicit 'return' destination
-        # Using helper flag to indicate whether the livescore came from home page or match result page
-        if helper == "on":
-            return redirect(url_for('main.index'))
-        elif helper == "phone":
-            return redirect(url_for('main.phonescore'))
-        else:
-            return redirect(url_for('main.matchresult', matchid=matchup.Match_ID))
+        return redirect(url_for(_return, matchid=matchup.Match_ID, collapse=_collapse))
 
-
-    # Renders on the GET of when the input does not validate
+    # Renders on the GET or when the input does not validate
     return render_template('livescore.html', title='Update Score', form=form, action='Update')
 
 
@@ -367,9 +362,12 @@ def matchover(matchid):
 @bp.route('/matchresult/<matchid>')
 @login_required
 def matchresult(matchid):
+    return_to = 'main.matchresult'
+    _collapse = request.args.get('collapse', default="Y")
+
     results = db.session.query(Player, MatchUp, Match).join(MatchUp, Player.idplayer == MatchUp.Player_ID). \
         join(Match, Match.idmatch == MatchUp.Match_ID).order_by(Player.Surname).filter_by(idmatch=matchid).all()
-    return render_template('matchresult.html', results=results, helper_role="off", hcaps=hcaps)
+    return render_template('matchresult.html', results=results, helper_role="off", hcaps=hcaps, return_to=return_to, collapse=_collapse)
 
 
 @bp.route('/opponent/<opp>')
@@ -381,11 +379,14 @@ def opponent(opp):
     return render_template('opponent.html', history=opp_history, opp=opp)
 
 
-@bp.route('/phonescore/')
+@bp.route('/phonescore')
 @login_required
 def phonescore():
     if current_user.UserRole != 'Admin' and current_user.UserRole != 'Helper':
         return redirect(url_for('main.index'))
+
+    _collapse = request.args.get('collapse', default="Y")
+    return_to = 'main.phonescore'
 
     # Nextmatch - speaks for itself
     nextmatch = Match.query.order_by(Match.MatchDate.asc(), Match.StartTime.asc()).\
@@ -410,7 +411,7 @@ def phonescore():
     live = db.session.query(Result).filter_by(Match_ID=nextmatch.idmatch).first()
 
     return render_template('phonescore.html', title='Phone Scoring', nextmatch=nextmatch, live=live,
-                           results=results, hcaps=hcaps, inprogress=match_inprogress)
+                           results=results, hcaps=hcaps, inprogress=match_inprogress, return_to=return_to, collapse=_collapse)
 
 
 @bp.route('/pickseason/<pick>')
@@ -519,35 +520,35 @@ def team(team):
     return render_template('team.html', history=team_history, team=team, inprogress=match_inprogress, hcaps=hcaps)
 
 
-@bp.route('/unavailable/<playerid>/<matchid>/<seasonid>/<player>')
+@bp.route('/unavailable/<playerid>/<matchid>/<seasonid>')
 @login_required
-def unavailable(playerid, matchid, seasonid, player):
+def unavailable(playerid, matchid, seasonid):
     if current_user.UserRole != 'Admin' and current_user.Player_ID != int(playerid):
         return redirect(url_for('main.index'))
+
+    _return= request.args.get('return_to', default="main.index")
+    _player = request.args.get('player', default="Unknown")
 
     avail = Availability(Match_ID=matchid, Player_ID=playerid, Season_ID=seasonid)
     db.session.add(avail)
 
-    flash('Availability for {} updated'.format(player))
+    flash('Availability for {} updated'.format(_player))
 
     db.session.commit()
 
-    # TODO Should be an explicit 'return' destination
-    # Length of player identity determines where we came from
-    if len(player) == 2:
-        target='main.availability'
-    else:
-        target='main.index'
-
-    return redirect(url_for(target))
+    return redirect(url_for(_return))
 
 
-@bp.route('/updatematchup/<matchupid>/<player>', methods=['GET', 'POST'])
-@bp.route('/updatematchup/<matchupid>/<player>/<helper>', methods=['GET', 'POST'])
+@bp.route('/updatematchup/<matchupid>', methods=['GET', 'POST'])
 @login_required
-def updatematchup(matchupid, player, helper=None):
+def updatematchup(matchupid):
     if current_user.UserRole != 'Admin' and current_user.UserRole != 'Helper':
         return redirect(url_for('main.index'))
+
+    # Collapse needed when using phonescore
+    _collapse = request.args.get('collapse', default="Y")
+    _return= request.args.get('return_to', default="main.index")
+    _player = request.args.get('player', default="Unknown")
 
     # Get Current MatchUp for update
     match = MatchUp.query.filter_by(idmatchup=matchupid).first()
@@ -563,10 +564,10 @@ def updatematchup(matchupid, player, helper=None):
         return redirect(url_for('main.index'))
 
     # Test the arguments to see which score to update
-    if player == 'MY':
+    if _player == 'MyPlayer':
         playerscore = match.MyPlayerScore + 1
         opponentscore = match.OpponentScore
-    else:
+    if _player == 'Opponent':
         playerscore = match.MyPlayerScore
         opponentscore = match.OpponentScore + 1
 
@@ -575,9 +576,4 @@ def updatematchup(matchupid, player, helper=None):
     flash('Score updated - Match versus {} - Score {}:{}'.
          format(opponentname, playerscore, opponentscore))
 
-    # TODO Should be an explicit 'return' destination
-    # Using helper flag to indicate whether the livescore came from home page or phone result page
-    if helper:
-        return redirect(url_for('main.phonescore'))
-    else:
-        return redirect(url_for('main.index'))
+    return redirect(url_for(_return, matchid=match.Match_ID, collapse=_collapse))

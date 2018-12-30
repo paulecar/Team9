@@ -12,7 +12,7 @@
             <p class="text-info">"{{current_message}}"</p>
         </div>
             <hr>
-            {{ wtf.quick_form(form) }}
+            {{ wtf.quick_form(form, button_map={'submit':'info'}) }}
         </div>
         <div class="col-md-2"></div>
     </div>

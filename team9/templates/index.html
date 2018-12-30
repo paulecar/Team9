@@ -4,7 +4,7 @@
 <h2 class="text-muted" align="center"> Amsterdam Team 9 Ball League<br>{{season.SeasonName}}</h2>
 <div class="jumbotron">
     <p align="right">
-    <a class="btn btn-info btn-xs glyphicon glyphicon-phone" title="Phone Updates" href="{{ url_for('main.phonescore') }}"></a>
+    <a class="btn btn-info btn-xs glyphicon glyphicon-phone" title="Phone Updates" href="{{ url_for('main.phonescore', collapse='Y') }}"></a>
     </p>
     <h3 align="center">The next match is on {{"{:%A, %d %b }".format(nextmatch.MatchDate)}} @
         {{"{:%H:%M}".format(nextmatch.StartTime)}}
@@ -15,7 +15,7 @@
             {% endif %}
             {% if not current_user.is_anonymous %}
             -
-            <a class="btn btn-default btn-xs"
+            <a class="btn btn-info btn-xs"
                title="show team history"
                href="{{ url_for('main.team', team=nextmatch.OpposingTeam) }}">
                 History</a>
@@ -104,14 +104,15 @@
                         <a title="mark unavailable"
                            class="btn btn-default btn-xs"
                            href="{{ url_for('main.unavailable', playerid=player.idplayer,
-                           matchid=nextmatch.idmatch, seasonid=season.idseason, player=player.Name) }}">
+                           matchid=nextmatch.idmatch, seasonid=season.idseason,
+                           player=player.Name, return_to=return_to) }}">
                             <span class="glyphicon glyphicon-ok" style="color:mediumseagreen">
                         </a>
                     {% else %}
                         <a title="mark available"
                            class="btn btn-default btn-xs"
                            href="{{ url_for('main.available', availid=absent[player.idplayer],
-                           player=player.Name, playerid=player.idplayer) }}">
+                           player=player.Name, playerid=player.idplayer, return_to=return_to) }}">
                             <span class="glyphicon glyphicon-remove" style="color:orange">
                         </a>
                     {% endif %}

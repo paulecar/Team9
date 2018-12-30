@@ -1,52 +1,67 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-<h3 class="text-muted" align="center">Phoning It In</h3>
+<h3 class="text-muted" align="center">Phoning It In
+{% if collapse == 'N' %}
+        <a class="btn btn-info btn-xs glyphicon glyphicon-collapse-down" title="Show Less" href="{{ url_for('main.phonescore', collapse='Y') }}"></a>
+{% else %}
+        <a class="btn btn-info btn-xs glyphicon glyphicon-collapse-up" title="Show All" href="{{ url_for('main.phonescore', collapse='N') }}"></a>
+{% endif %}
+</h3>
 <div class="jumbotron">
     <table title="Phone Scoring" class="table table-striped">
         {% if results %}
             <div class="table-striped">
                 {% for result in results %}
-                    <tr align="center">
-                        <td>
-                            <a title="display player stats"
-                           class="tab"
-                           href="{{ url_for('main.history', player_id=result.Player.idplayer) }}">
-                            {{result.Player.FirstName}} {{result.Player.Surname}}</a>
-                                ({{result.MatchUp.MyPlayerRank}})
-                            <br>versus<br>
-                            <a class="tab" title="show opponent history" href="{{ url_for('main.opponent', opp=result.MatchUp.OpponentName) }}">
-                            {{result.MatchUp.OpponentName}}</a> ({{result.MatchUp.OpponentRank}})
-                        </td>
-                        <td>Race: {{'{} on {}'.format(hcaps[result.MatchUp.MyPlayerRank][result.MatchUp.OpponentRank][0],
-                            hcaps[result.MatchUp.MyPlayerRank][result.MatchUp.OpponentRank][1])}}<br>
-                            {% if result.MatchUp.WinLose == 'I' %}
-                                <span class="label label-default">IN PROGRESS</span>
-                            {% else %}
-                                {% if result.MatchUp.WinLose == "W" %}
-                                    <span class="label label-success">WIN {{result.MatchUp.MyPlayerScore}} : {{result.MatchUp.OpponentScore}}</span>
+                    {% if collapse == 'N' or (collapse == 'Y' and result.MatchUp.WinLose == "I" ) %}
+                        <tr align="center">
+                            <td>
+                                <a title="display player stats"
+                               class="tab"
+                               href="{{ url_for('main.history', player_id=result.Player.idplayer) }}">
+                                {{result.Player.FirstName}} {{result.Player.Surname}}</a>
+                                    ({{result.MatchUp.MyPlayerRank}})
+                                <br>versus<br>
+                                <a class="tab" title="show opponent history" href="{{ url_for('main.opponent', opp=result.MatchUp.OpponentName) }}">
+                                {{result.MatchUp.OpponentName}}</a> ({{result.MatchUp.OpponentRank}})
+                            </td>
+                            <td>Race: {{'{} on {}'.format(hcaps[result.MatchUp.MyPlayerRank][result.MatchUp.OpponentRank][0],
+                                hcaps[result.MatchUp.MyPlayerRank][result.MatchUp.OpponentRank][1])}}<br>
+                                {% if result.MatchUp.WinLose == 'I' %}
+                                    <h5><span class="label label-default">IN PROGRESS</span></h5>
                                 {% else %}
-                                    <span class="label label-warning">LOSS {{result.MatchUp.MyPlayerScore}} : {{result.MatchUp.OpponentScore}}</span>
+                                    {% if result.MatchUp.WinLose == "W" %}
+                                        <h5><span class="label label-success">WIN {{result.MatchUp.MyPlayerScore}}
+                                            : {{result.MatchUp.OpponentScore}}</span></h5>
+                                    {% else %}
+                                        <h5><span class="label label-warning">LOSS {{result.MatchUp.MyPlayerScore}}
+                                            : {{result.MatchUp.OpponentScore}}</span></h5>
+                                    {% endif %}
                                 {% endif %}
-                            {% endif %}
-                        </td>
-                    </tr>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr></tr>
+                    {% endif %}
                     {% if result.MatchUp.WinLose == "I" %}
                         <tr align="center">
                             {% if current_user.UserRole == 'Admin' or current_user.UserRole == 'Helper' %}
                                 <td><a title="add one"
                                     class="btn btn-default btn-xs"
-                                    href="{{ url_for('main.updatematchup', matchupid=result.MatchUp.idmatchup, player='MY', helper='phone') }}">
+                                    href="{{ url_for('main.updatematchup', matchupid=result.MatchUp.idmatchup,
+                                    player='MyPlayer', return_to=return_to, collapse=collapse) }}">
                                     +</a>
                                 <a title="update live score"
                                    class="btn btn-default btn-xs"
-                                    href="{{ url_for('main.livescore', matchupid=result.MatchUp.idmatchup, helper='phone') }}">
+                                    href="{{ url_for('main.livescore', matchupid=result.MatchUp.idmatchup,
+                                     return_to=return_to, collapse=collapse) }}">
                                     {{result.MatchUp.MyPlayerScore}} : {{result.MatchUp.OpponentScore}}
                                     <span class="glyphicon glyphicon-edit">
                                 </a>
                                 <a title="add one"
                                    class="btn btn-default btn-xs"
-                                    href="{{ url_for('main.updatematchup', matchupid=result.MatchUp.idmatchup, player='OPP', helper='phone') }}">
+                                    href="{{ url_for('main.updatematchup', matchupid=result.MatchUp.idmatchup,
+                                    player='Opponent', return_to=return_to, collapse=collapse) }}">
                                 +</a>
                                 </td>
                                 <td><a class="btn btn-danger btn-xs"
@@ -58,6 +73,8 @@
                             {% endif %}
                         </tr>
                         {% include '_areyousureMatchUp.html' %}
+                    {% else %}
+                        <tr></tr>
                     {% endif %}
                 {% endfor %}
             </div>
@@ -69,6 +86,7 @@
 
     </div>
     <div class="row">
+        <br>
         <a class="btn btn-primary btn-sm" title="add head to head" href="{{ url_for('admin.addmatchup', matchid=nextmatch.idmatch) }}">
                         Add Match Up</a>
     </div>

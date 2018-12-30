@@ -6,7 +6,7 @@ from wtforms.validators import DataRequired, ValidationError
 
 
 # Utility objects
-from team9utils import hcaps, ranks, racks, roles, yn, get_est
+from team9utils import hcaps, ranks, racks, roles, yn, get_est, themes
 from team9.main.forms import validateScore
 
 
@@ -129,6 +129,11 @@ class SeasonMan(FlaskForm):
     submit = SubmitField('Update Season')
 
 
+class UploadForm(FlaskForm):
+    filename = FileInput()
+    submit = SubmitField('Upload')
+
+
 class UserMan(FlaskForm):
     # Create pick lists
     player = []
@@ -138,6 +143,7 @@ class UserMan(FlaskForm):
     submit = SubmitField('Update User')
 
 
-class UploadForm(FlaskForm):
-    filename = FileInput()
-    submit = SubmitField('Upload')
+class UserTheme(FlaskForm):
+    themepick = SelectField('Select Theme', choices=themes)
+
+    submit = SubmitField('Update Settings')

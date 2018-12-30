@@ -1,7 +1,7 @@
 from flask import current_app, render_template, flash, redirect, url_for, request
 from team9 import db
 from team9.models import Player, Match, Season, MatchUp, User, Result, Availability
-from team9.admin.forms import AddMatch, AddSeason, AddPlayer, \
+from team9.admin.forms import AddMatch, AddSeason, AddPlayer, UserTheme, \
     AddMatchUp, UploadForm, SeasonMan, BogMan, UserMan, UpdateMatch
 from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
@@ -394,3 +394,29 @@ def userman(id):
         return redirect(url_for('admin.userlist'))
     # Renders on the GET of when the input does not validate
     return render_template('admin/userman.html', title='User Manager', form=form, user=user_id)
+
+
+@bp.route('/usertheme/<id>', methods=['GET', 'POST'])
+@login_required
+def usertheme(id):
+    if current_user.id != int(id):
+        return redirect(url_for('main.index'))
+
+    user = User.query.filter_by(id=id).first()
+    user_id = str(user.id) + " : " + user.UserName + " (" + user.Email + ")"
+
+    form = UserTheme(themepick=user.theme)
+
+    if form.validate_on_submit():
+        if form.themepick.data == "Default":
+            user.theme = None
+        else:
+            user.theme = form.themepick.data
+
+        db.session.commit()
+
+        flash('Theme set for User : {} - Theme : {}'.format(user_id, form.themepick.data))
+        return redirect(url_for('main.index'))
+
+    # Renders on the GET of when the input does not validate
+    return render_template('admin/usertheme.html', title='User Settings', form=form, user=user_id)

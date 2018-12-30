@@ -32,7 +32,8 @@
         <td class="text-center">
             <a title="add one"
                    class="btn btn-default btn-xs"
-                   href="{{ url_for('main.updatematchup', matchupid=result.MatchUp.idmatchup, player='MY') }}">
+                   href="{{ url_for('main.updatematchup', matchupid=result.MatchUp.idmatchup, player='MyPlayer',
+                   return_to=return_to, collapse=collapse) }}">
                 +</a>
     {% else %}
         <td class="text-center">
@@ -40,7 +41,7 @@
     {% if current_user.UserRole == 'Admin' or (current_user.UserRole == 'Helper' and helper_role == "on") %}
             <a title="update live score"
                class="btn btn-default btn-xs"
-               href="{{ url_for('main.livescore', matchupid=result.MatchUp.idmatchup, helper=helper_role) }}">
+               href="{{ url_for('main.livescore', matchupid=result.MatchUp.idmatchup, return_to=return_to) }}">
                 {{result.MatchUp.MyPlayerScore}} : {{result.MatchUp.OpponentScore}}
                  <span class="glyphicon glyphicon-edit">
                 </a>
@@ -50,7 +51,8 @@
     {% if (current_user.UserRole == 'Admin' or current_user.UserRole == 'Helper') and helper_role == "on" %}
             <a title="add one"
                class="btn btn-default btn-xs"
-               href="{{ url_for('main.updatematchup', matchupid=result.MatchUp.idmatchup, player='OPP') }}">
+               href="{{ url_for('main.updatematchup', matchupid=result.MatchUp.idmatchup, player='Opponent',
+               return_to=return_to, collapse=collapse) }}">
                 +</a>
         </td>
     {% endif %}
