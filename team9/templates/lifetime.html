@@ -26,7 +26,13 @@
                        href="{{ url_for('main.history', player_id=stats.idplayer) }}">
                      {{stats.FirstName}} {{stats.Surname}}</a>
                 </td>
-                <td>{{stats.Active}}</td>
+                <td>
+                {% if stats.Active == 'Y' %}
+                    <span class="label label-success">Active</span>
+                {% else %}
+                    <span class="label label-warning">Inactive</span>
+                {% endif %}
+                </td>
                 <td>{{stats.MatchesPlayed}}</td>
                 <td>{{"{:.2%}".format(stats.WinPct)}}</td>
                 <td>{{stats.ActRacksWon}} : {{stats.ActRacksLost}}</td>
