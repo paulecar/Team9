@@ -357,7 +357,7 @@ def userlist():
     if current_user.UserRole != 'Admin':
         return redirect(url_for('main.index'))
     users = User.query.outerjoin(Player, Player.idplayer == User.Player_ID). \
-        add_columns(User.id, User.UserName, User.Email, User.ConfCode, User.Verified, User.UserRole, User.last_seen,
+        add_columns(User.id, User.UserName, User.Email, User.ConfCode, User.Verified, User.UserRole, User.last_seen, User.theme,
                     Player.FirstName, Player.Surname).order_by(User.UserName).all()
     return render_template('admin/userlist.html', userlist=users)
 

@@ -64,7 +64,7 @@
                 </td>
                 <td><a title="display player stats"
                        class="tab"
-                       href="{{ url_for('main.history', player_id=stats.idplayer) }}">
+                       href="{{ url_for('main.drilldown', player_id=stats.idplayer, playoff='Y') }}">
                      {{stats.FirstName}} {{stats.Surname}}</a>
                 </td>
                 <td>

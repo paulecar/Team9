@@ -7,6 +7,7 @@
         <th>User Role</th>
         <th>Player Name</th>
         <th>Last Seen</th>
+        <th>Theme</th>
         <th>User Id</th>
         <th colspan="2"></th>
         {% for user in userlist %}
@@ -16,6 +17,7 @@
                 <td>{{user.UserRole}}</td>
                 <td>{{user.FirstName}} {{user.Surname}}</td>
                 <td>{{user.last_seen}}</td>
+                <td>{{user.theme}}</td>
                 <td>{{user.id}}</td>
                 <td><a title="user manager"
                        class="btn btn-default btn-xs"

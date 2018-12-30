@@ -195,20 +195,33 @@ def deletematchup(matchupid, matchid):
     return redirect(url_for('main.index'))
 
 
-@bp.route('/drilldown/<player_id>/<season_id>/<win_loss>')
+@bp.route('/drilldown')
 @login_required
-def drilldown(player_id=None, season_id=None, win_loss=None):
-    if player_id is None or season_id is None or win_loss is None:
+def drilldown():
+    _player_id = request.args.get('player_id', default=None)
+    _season_id = request.args.get('season_id', default=None)
+    _playoff = request.args.get('playoff', default=None)
+
+    if _player_id is None:
         return redirect(url_for('main.index'))
 
-    player = Player.query.filter_by(idplayer=player_id).first()
+    if _season_id:
+        select_history = db.session.query(Match, MatchUp, Season, Player). \
+            join(MatchUp, Match.idmatch == MatchUp.Match_ID). \
+            join(Season, Match.Season_ID == Season.idseason). \
+            join(Player, MatchUp.Player_ID == Player.idplayer). \
+            filter(MatchUp.Player_ID == _player_id, Season.idseason == _season_id). \
+            order_by(Match.MatchDate).all()
 
-    select_history = db.session.query(Match, MatchUp). \
-        join(MatchUp, Match.idmatch == MatchUp.Match_ID). \
-        filter(MatchUp.Player_ID == player_id, Match.Season_ID == season_id, MatchUp.WinLose == win_loss). \
-        order_by(Match.MatchDate).all()
+    if _playoff:
+        select_history = db.session.query(Match, MatchUp, Season, Player). \
+            join(MatchUp, Match.idmatch == MatchUp.Match_ID). \
+            join(Season, Match.Season_ID == Season.idseason). \
+            join(Player, MatchUp.Player_ID == Player.idplayer). \
+            filter(MatchUp.Player_ID == _player_id, Match.PlayOff == _playoff). \
+            order_by(Match.MatchDate).all()
 
-    return render_template('drilldown.html', history=select_history, player=player)
+    return render_template('drilldown.html', history=select_history)
 
 
 @bp.route('/history')
@@ -260,14 +273,12 @@ def history():
         labels.append(season.SeasonName)
         wins.append({'value' : int(season.Wins), 'color': 'MediumSeaGreen',
                      'xlink' : { 'href' : '{}{}'.format(current_app.config['PYGAL_URL'],
-                                url_for('main.drilldown', player_id=season.idplayer,
-                                        season_id=season.idseason, win_loss='W')),
+                                url_for('main.drilldown', player_id=season.idplayer, season_id=season.idseason)),
                                 'target' : '_parent' },
                      'label' : "Pct {:.0%}".format(season.WinPct)})
         loses.append({'value' : int(season.Loses), 'color': 'Orange',
                       'xlink': {'href': '{}{}'.format(current_app.config['PYGAL_URL'],
-                                url_for('main.drilldown', player_id=season.idplayer,
-                                        season_id=season.idseason, win_loss='L')),
+                                url_for('main.drilldown', player_id=season.idplayer, season_id=season.idseason)),
                                 'target': '_parent'},
                       'label' : "Pct {:.0%}".format(1 - season.WinPct)})
 

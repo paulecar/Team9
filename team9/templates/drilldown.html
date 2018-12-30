@@ -1,9 +1,10 @@
 {% extends "base.html" %}
 {% block app_content %}
-    <h4 class="text-muted" align="center">Selected History for {{player.FirstName}} {{player.Surname}}</h4>
+    <h4 class="text-muted" align="center">Selected History for {{history[0].Player.FirstName}} {{history[0].Player.Surname}}</h4>
 
     <div class="table-responsive">
     <table title="History" class="table table-striped">
+        <th>Season</th>
         <th>Match Date</th>
         <th>Play Off</th>
         <th>Your Rank</th>
@@ -14,6 +15,7 @@
         <th>Opposing Team</th>
         {% for matchup in history %}
             <tr>
+                <td>{{matchup.Season.SeasonName}}</td>
                 <td>{{matchup.Match.MatchDate}}</td>
                 <td>
                     {% if matchup.Match.PlayOff == 'Y' %}
