@@ -300,13 +300,28 @@ def history():
 @login_required
 def lifetime():
     player_summary = db.session.query(Player.idplayer, Player.FirstName, Player.Surname, Player.Active,
-                  func.count(MatchUp.idmatchup).label('MatchesPlayed'),
-                  func.sum(MatchUp.MyPlayerActual).label('ActRacksWon'),
-                  func.sum(MatchUp.OpponentActual).label('ActRacksLost'),
-                  (func.sum(MatchUp.MyPlayerActual) / (func.sum(MatchUp.OpponentActual) + func.sum(MatchUp.MyPlayerActual))).label('RackPct'),
-                  (func.sum(func.IF(MatchUp.WinLose == 'W', 1, 0)) / func.count(MatchUp.WinLose)).label('WinPct')). \
-        join(MatchUp, MatchUp.Player_ID == Player.idplayer).order_by(Player.Surname).group_by(Player.idplayer).all()
-    return render_template('lifetime.html', summary=player_summary)
+                                        func.count(MatchUp.idmatchup).label('MatchesPlayed'),
+                                        func.sum(MatchUp.MyPlayerActual).label('ActRacksWon'),
+                                        func.sum(MatchUp.OpponentActual).label('ActRacksLost'),
+                                        (func.sum(MatchUp.MyPlayerActual) / (func.sum(MatchUp.OpponentActual)
+                                                                             + func.sum(MatchUp.MyPlayerActual))).label('RackPct'),
+                                        (func.sum(func.IF(MatchUp.WinLose == 'W', 1, 0)) / func.count(MatchUp.WinLose)).label('WinPct')). \
+                                    join(MatchUp, MatchUp.Player_ID == Player.idplayer).order_by(Player.Surname).group_by(Player.idplayer).all()
+
+    playoff_summary = db.session.query(Player.idplayer, Player.FirstName, Player.Surname, Player.Active,
+                                        func.count(MatchUp.idmatchup).label('MatchesPlayed'),
+                                        func.sum(MatchUp.MyPlayerActual).label('ActRacksWon'),
+                                        func.sum(MatchUp.OpponentActual).label('ActRacksLost'),
+                                        (func.sum(MatchUp.MyPlayerActual) / (func.sum(MatchUp.OpponentActual) + func.sum(
+                                           MatchUp.MyPlayerActual))).label('RackPct'),
+                                        (func.sum(func.IF(MatchUp.WinLose == 'W', 1, 0)) / func.count(
+                                           MatchUp.WinLose)).label('WinPct')). \
+                                    join(MatchUp, MatchUp.Player_ID == Player.idplayer). \
+                                    join(Match, MatchUp.Match_ID == Match.idmatch). \
+                                    filter_by(PlayOff="Y"). \
+                                    order_by(Player.Surname).group_by(Player.idplayer).all()
+
+    return render_template('lifetime.html', summary=player_summary, playoffs=playoff_summary)
 
 
 @bp.route('/livescore/<matchupid>', methods=['GET', 'POST'])

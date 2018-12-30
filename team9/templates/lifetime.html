@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block app_content %}
-    <h2 class="text-muted" align="center">Player Lifetime History</h2>
-    <h3 class="text-muted" align="center">Player Stats</h3>
+    <h2 class="text-muted" align="center">Lifetime History</h2>
+    <h4 class="text-muted" align="center">Player Stats</h4>
     <div class="table-responsive">
     <table title="Summary" class="table table-striped">
         <th></th>
@@ -42,4 +42,44 @@
     </table>
     </div>
 
+    <h4 class="text-muted" align="center">Playoff Stats</h4>
+    <div class="table-responsive">
+    <table title="Summary" class="table table-striped">
+        <th></th>
+        <th>Player</th>
+        <th>Active</th>
+        <th>Matches</th>
+        <th>Win Pct</th>
+        <th>Racks</th>
+        <th>Rack Pct</th>
+        {% for stats in playoffs %}
+            <tr>
+                <td>
+                {% if current_user.UserRole == 'Admin' %}
+                    <a title="bog manager"
+                           class="btn btn-default btn-xs"
+                           href="{{ url_for('admin.bogman', playerid=stats.idplayer) }}">
+                        <span class="glyphicon glyphicon-edit"></a>
+                {% endif %}
+                </td>
+                <td><a title="display player stats"
+                       class="tab"
+                       href="{{ url_for('main.history', player_id=stats.idplayer) }}">
+                     {{stats.FirstName}} {{stats.Surname}}</a>
+                </td>
+                <td>
+                {% if stats.Active == 'Y' %}
+                    <span class="label label-success">Active</span>
+                {% else %}
+                    <span class="label label-warning">Inactive</span>
+                {% endif %}
+                </td>
+                <td>{{stats.MatchesPlayed}}</td>
+                <td>{{"{:.2%}".format(stats.WinPct)}}</td>
+                <td>{{stats.ActRacksWon}} : {{stats.ActRacksLost}}</td>
+                <td>{{"{:.2%}".format(stats.RackPct)}}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    </div>
 {% endblock %}
