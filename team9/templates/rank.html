@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% block app_content %}
-    <h2 class="text-muted" align="center"> Player Rankings - {{season}}</h2>
-    <div align="center">
+    <h2 class="text-muted" align="center"> Player Rankings -
         <a title="view ranking for another season"
-               class="btn btn-default btn-xs"
+               class="btn btn-default btn-md"
                href="{{ url_for('main.pickseason', return_to=return_to) }}">
-            Change Season</a>
-    </div>
+            {{season}}</a>
+    </h2>
+    <br>
     <h4 class="text-muted" align="center">Ranked by Matches Won</h4>
     <div class="table-responsive">
         <table title="Match Percentages" class="table table-striped">

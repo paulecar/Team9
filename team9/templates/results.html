@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% block app_content %}
-    <h2 class="text-muted" align="center">Season Results - {{season}}</h2>
-    <div align="center">
-        <a title="view results for another season"
-               class="btn btn-default btn-xs"
+    <h2 class="text-muted" align="center">Season Results -
+        <a title="view ranking for another season"
+               class="btn btn-default btn-md"
                href="{{ url_for('main.pickseason', return_to=return_to) }}">
-            Change Season</a>
-    </div>
+            {{season}}</a>
+    </h2>
+    <br>
     <div id="chart" align="center">
         <embed type="image/svg+xml" src= {{ chart|safe }} width="800" height="300" class="img-responsive"/>
     </div>
@@ -15,7 +15,7 @@
         <table title="Season Stats" class="table table-striped">
             <tr>
                 <th colspan="3" align="center">Wins</th>
-                <th colspan="3" align="center">Loses</th>
+                <th colspan="3" align="center">Losses</th>
             </tr>
             <tr>
                 <th>Sweep</th>

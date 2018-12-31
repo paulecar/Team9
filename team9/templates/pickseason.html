@@ -1,10 +1,14 @@
 {% extends "base.html" %}
 {% block app_content %}
-    <h2 class="text-muted"> Select Season</h2>
+    <h3 class="text-muted" align="center"> Select Season</h3>
+
     <table title="Users" class="table table-striped">
         <th>Season</th>
         <th>Start</th>
         <th>End</th>
+        <th>Matches Played</th>
+        <th>Wins</th>
+        <th>Losses</th>
         {% for season in seasons %}
             <tr>
                 <td>
@@ -15,7 +19,15 @@
                 </td>
                 <td>{{season.SeasonStart}}</td>
                 <td>{{season.SeasonEnd}}</td>
+                <td>{{season.MatchesPlayed}}</td>
+                <td>{{season.Wins}}</td>
+                <td>{{season.Losses}}</td>
             </tr>
         {% endfor %}
     </table>
+    <br>
+    <h4 class="text-muted" align="center">Record by Season</h4>
+    <div id="chart" align="center">
+        <embed type="image/svg+xml" src= {{ chart|safe }} width="800" height="300" class="img-responsive"/>
+    </div>
 {% endblock %}

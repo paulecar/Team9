@@ -6,6 +6,7 @@ from team9utils import hcaps
 from flask_login import current_user, login_required
 from sqlalchemy import func
 import pygal, copy
+from pygal.style import DarkStyle
 from team9.main import bp
 from team9utils import getRace, setWinner, get_est, kvmGet
 
@@ -250,7 +251,7 @@ def history():
     player_graph = db.session.query(Season.SeasonName, Season.SeasonStart, Season.idseason,
                                     func.count(MatchUp.idmatchup).label('MatchesPlayed'),
                                     func.sum(func.IF(MatchUp.WinLose == 'W', 1, 0)).label('Wins'),
-                                    func.sum(func.IF(MatchUp.WinLose == 'L', 1, 0)).label('Loses'),
+                                    func.sum(func.IF(MatchUp.WinLose == 'L', 1, 0)).label('Losses'),
                                     (func.sum(func.IF(MatchUp.WinLose == 'W', 1, 0)) / func.count(MatchUp.WinLose)).label('WinPct'),
                                     Player.idplayer). \
         join(Match, Season.idseason == Match.Season_ID). \
@@ -264,9 +265,12 @@ def history():
     chart = pygal.HorizontalStackedBar(show_legend=False, tooltip_fancy_mode=False,
                                        print_values=True, width=800, height=300)
 
+    if current_user.theme in ['darkly', 'cyborg', 'slate', 'superhero']:
+        chart.style = DarkStyle
+
     labels=[]
     wins=[]
-    loses=[]
+    losses=[]
     # Create series lists for the chart.add command
     # PYGAL_URL is localhost:5000 for testing, main URL for AWS
     for season in player_graph:
@@ -276,7 +280,7 @@ def history():
                                 url_for('main.drilldown', player_id=season.idplayer, season_id=season.idseason)),
                                 'target' : '_parent' },
                      'label' : "Pct {:.0%}".format(season.WinPct)})
-        loses.append({'value' : int(season.Loses), 'color': 'Orange',
+        losses.append({'value' : int(season.Losses), 'color': 'Orange',
                       'xlink': {'href': '{}{}'.format(current_app.config['PYGAL_URL'],
                                 url_for('main.drilldown', player_id=season.idplayer, season_id=season.idseason)),
                                 'target': '_parent'},
@@ -285,7 +289,7 @@ def history():
     # Build the graph itself
     chart.x_labels = labels
     chart.add("Wins", wins)
-    chart.add("Loses", loses)
+    chart.add("Losses", losses)
     chart = chart.render_data_uri()
 
     player_summary = db.session.query(Player.Surname, MatchUp.MyPlayerRank,
@@ -441,8 +445,45 @@ def pickseason():
 
     _return= request.args.get('return_to', default="main.index")
 
-    seasons = Season.query.order_by(Season.SeasonStart.asc()).all()
-    return render_template('pickseason.html', seasons=seasons, return_to=_return)
+    season_history = db.session.query(Season.SeasonStart, Season.idseason, Season.SeasonName, Season.SeasonEnd,
+                                        func.count(Match.idmatch).label('MatchesPlayed'),
+                                        func.sum(func.IF(Result.DidWeWin == 1, 1, 0)).label('Wins'),
+                                        func.sum(func.IF(Result.DidWeWin == 0, 1, 0)).label('Losses')). \
+                                    join(Match, Match.Season_ID == Season.idseason). \
+                                    join(Result, Result.Match_ID == Match.idmatch). \
+                                    group_by(Season.idseason, Season.SeasonName, Season.SeasonStart, Season.SeasonEnd).\
+                                    order_by(Season.SeasonStart.desc()).all()
+
+    # Configure horizontal bar chart of season history
+    chart = pygal.HorizontalStackedBar(show_legend=False, tooltip_fancy_mode=False,
+                                       print_values=True, width=800, height=300)
+
+    if current_user.theme in ['darkly', 'cyborg', 'slate', 'superhero']:
+        chart.style = DarkStyle
+
+    labels=[]
+    wins=[]
+    losses=[]
+    # Create series lists for the chart.add command
+    # PYGAL_URL is localhost:5000 for testing, main URL for AWS
+    for season in reversed(season_history):
+        labels.append(season.SeasonName)
+        wins.append({'value' : int(season.Wins), 'color': 'MediumSeaGreen',
+                     'xlink' : { 'href' : '{}{}'.format(current_app.config['PYGAL_URL'],
+                                url_for(_return, season_id=season.idseason)),
+                                'target' : '_parent' }})
+        losses.append({'value' : int(season.Losses), 'color': 'Orange',
+                    'xlink': {'href': '{}{}'.format(current_app.config['PYGAL_URL'],
+                                                    url_for(_return, season_id=season.idseason)),
+                              'target': '_parent'}})
+
+    # Build the graph itself
+    chart.x_labels = labels
+    chart.add("Wins", wins)
+    chart.add("Losses", losses)
+    chart = chart.render_data_uri()
+
+    return render_template('pickseason.html', seasons=season_history, chart=chart, return_to=_return)
 
 
 @bp.route('/ranking')
@@ -500,7 +541,7 @@ def results():
 
     # Calculate pie and season info
     wins=0
-    loses=0
+    losses=0
     season_info={'w_skunk':0, 'l_skunk':0, 'w_1ptr':0, 'l_1ptr':0, 'w_tb':0, 'l_tb':0}
     for match in matches:
         if match.Match.MatchOver:
@@ -513,7 +554,7 @@ def results():
                 if diff == 1:   season_info['w_1ptr'] = season_info['w_1ptr'] + 1
                 if cnt == 5:    season_info['w_tb'] = season_info['w_tb'] + 1
             else:
-                loses=loses+1
+                losses=losses+1
                 if skunk == -4: season_info['l_skunk'] = season_info['l_skunk'] + 1
                 if diff == -1:  season_info['l_1ptr'] = season_info['l_1ptr'] + 1
                 if cnt == 5:    season_info['l_tb'] = season_info['l_tb'] + 1
@@ -522,12 +563,16 @@ def results():
     # Build the pie
     chart = pygal.Pie(half_pie=True, show_legend=False, inner_radius=0.4,
                       tooltip_fancy_mode=True, print_values=True, width=800, height=300)
+
+    if current_user.theme in ['darkly', 'cyborg', 'slate', 'superhero']:
+        chart.style = DarkStyle
+
     # Make sure we have at least one match
-    if wins+loses >=1 :
-        chart.add('Wins', [{'value': wins/(wins+loses) * 100, 'color' : 'MediumSeaGreen'}],
+    if wins+losses >=1 :
+        chart.add('Wins', [{'value': wins/(wins+losses) * 100, 'color' : 'MediumSeaGreen'}],
                   formatter = lambda x: "Wins {:.0%}({})".format(x/100, wins))
-        chart.add('Loses', [{ 'value' : loses/(wins+loses) * 100, 'color' : 'Orange'}],
-                  formatter = lambda x: "Loses {:.0%}({})".format(x/100, loses))
+        chart.add('Losses', [{ 'value' : losses/(wins+losses) * 100, 'color' : 'Orange'}],
+                  formatter = lambda x: "Losses {:.0%}({})".format(x/100, losses))
     chart = chart.render_data_uri()
 
     return render_template('results.html', return_to=return_to, matches=matches, season=display_season_name, chart=chart, info=season_info)
