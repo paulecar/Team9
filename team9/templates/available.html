@@ -23,25 +23,25 @@
                             {% if current_user.Player_ID == a['id'] or current_user.UserRole == 'Admin' %}
                                 {% if a['avail'] %}
                                     <a title="mark unavailable"
-                                       class="btn btn-default btn-xs"
+                                       class="btn btn-success btn-xs"
                                        href="{{ url_for('main.unavailable', playerid=a['id'],
                                        matchid=match.Match.idmatch, seasonid=seasonid,
                                        player=a['initials'], return_to=return_to) }}">
-                                        <span class="glyphicon glyphicon-ok" style="color:mediumseagreen">
+                                        <span class="glyphicon glyphicon-ok-sign">
                                     </a>
                                 {% else %}
                                     <a title="mark available"
-                                       class="btn btn-default btn-xs"
+                                       class="btn btn-warning btn-xs"
                                        href="{{ url_for('main.available', availid=a['a_id'],
                                        player=a['initials'], playerid=a['id'], return_to=return_to) }}">
-                                        <span class="glyphicon glyphicon-remove" style="color:orange">
+                                        <span class="glyphicon glyphicon-remove-sign">
                                     </a>
                                 {% endif %}
                             {% else %}
                                 {% if a['avail'] %}
-                                    <span class="glyphicon glyphicon-ok" style="color:mediumseagreen">
+                                    <span class="label label-success"><span class="glyphicon glyphicon-ok"></span>
                                 {% else %}
-                                    <span class="glyphicon glyphicon-remove" style="color:orange">
+                                    <span class="label label-warning"><span class="glyphicon glyphicon-remove"></span>
                                 {% endif %}
                             {% endif %}
                             </td>

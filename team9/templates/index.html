@@ -4,7 +4,10 @@
 <h2 class="text-muted" align="center"> Amsterdam Team 9 Ball League<br>{{season.SeasonName}}</h2>
 <div class="jumbotron">
     <p align="right">
-    <a class="btn btn-info btn-xs glyphicon glyphicon-phone" title="Phone Updates" href="{{ url_for('main.phonescore', collapse='Y') }}"></a>
+    <a class="btn btn-info btn-xs"
+       title="Phone Updates"
+       href="{{ url_for('main.phonescore', collapse='Y') }}">
+        <span class="glyphicon glyphicon-phone"></a>
     </p>
     <h3 align="center">The next match is on {{"{:%A, %d %b }".format(nextmatch.MatchDate)}} @
         {{"{:%H:%M}".format(nextmatch.StartTime)}}
@@ -102,25 +105,25 @@
                 {% if current_user.Player_ID == player.idplayer or current_user.UserRole == 'Admin' %}
                     {% if not player.idplayer in absent %}
                         <a title="mark unavailable"
-                           class="btn btn-default btn-xs"
+                           class="btn btn-success btn-xs"
                            href="{{ url_for('main.unavailable', playerid=player.idplayer,
                            matchid=nextmatch.idmatch, seasonid=season.idseason,
                            player=player.Name, return_to=return_to) }}">
-                            <span class="glyphicon glyphicon-ok" style="color:mediumseagreen">
+                            <span class="glyphicon glyphicon-ok-sign">
                         </a>
                     {% else %}
                         <a title="mark available"
-                           class="btn btn-default btn-xs"
+                           class="btn btn-warning btn-xs"
                            href="{{ url_for('main.available', availid=absent[player.idplayer],
                            player=player.Name, playerid=player.idplayer, return_to=return_to) }}">
-                            <span class="glyphicon glyphicon-remove" style="color:orange">
+                            <span class="glyphicon glyphicon-remove-sign">
                         </a>
                     {% endif %}
                 {% else %}
                     {% if not player.idplayer in absent %}
-                        <span class="glyphicon glyphicon-ok" style="color:mediumseagreen">
+                        <span class="label label-success"><span class="glyphicon glyphicon-ok"></span>
                     {% else %}
-                        <span class="glyphicon glyphicon-remove" style="color:orange">
+                        <span class="label label-warning"><span class="glyphicon glyphicon-remove"></span>
                     {% endif %}
                 {% endif %}
             </td>
@@ -132,15 +135,15 @@
                 <td>
                     {% if player.Bogged == 'Y' %}
                         <a title="mark unbogged"
-                           class="btn btn-default btn-xs"
+                           class="btn btn-success btn-xs"
                            href="{{ url_for('admin.bogger', playerid=player.idplayer) }}">
-                            <span class="glyphicon glyphicon-ok" style="color:mediumseagreen">
+                            <span class="glyphicon glyphicon-ok-sign">
                         </a>
                     {% else %}
                         <a title="mark bogged"
-                           class="btn btn-default btn-xs"
+                           class="btn btn-warning btn-xs"
                            href="{{ url_for('admin.bogger', playerid=player.idplayer) }}">
-                            <span class="glyphicon glyphicon-remove" style="color:orange">
+                            <span class="glyphicon glyphicon-remove-sign">
                         </a>
                     {% endif %}
                 </td>
