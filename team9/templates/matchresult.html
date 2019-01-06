@@ -16,6 +16,8 @@
                 {% include '_scores.html' %}
         </table>
     </div>
+    <h3 align="center" class="text-muted">Matches {{result.MatchUpsWon}} : {{result.MatchUpsLost}} -
+                Racks {{result.RacksWon}} : {{result.RacksLost}} </h3>
     {% if current_user.UserRole == 'Admin' %}
         <a class="btn btn-default btn-xs"
                title="modify date or time"

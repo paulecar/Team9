@@ -8,6 +8,7 @@
         <th>Player</th>
         <th>Active</th>
         <th>Matches</th>
+        <th>Wins</th>
         <th>Win Pct</th>
         <th>Racks</th>
         <th>Rack Pct</th>
@@ -34,6 +35,7 @@
                 {% endif %}
                 </td>
                 <td>{{stats.MatchesPlayed}}</td>
+                <td>{{stats.Wins}}</td>
                 <td>{{"{:.2%}".format(stats.WinPct)}}</td>
                 <td>{{stats.ActRacksWon}} : {{stats.ActRacksLost}}</td>
                 <td>{{"{:.2%}".format(stats.RackPct)}}</td>
@@ -49,6 +51,7 @@
         <th>Player</th>
         <th>Active</th>
         <th>Matches</th>
+        <th>Wins</th>
         <th>Win Pct</th>
         <th>Racks</th>
         <th>Rack Pct</th>
@@ -75,6 +78,7 @@
                 {% endif %}
                 </td>
                 <td>{{stats.MatchesPlayed}}</td>
+                <td>{{stats.Wins}}</td>
                 <td>{{"{:.2%}".format(stats.WinPct)}}</td>
                 <td>{{stats.ActRacksWon}} : {{stats.ActRacksLost}}</td>
                 <td>{{"{:.2%}".format(stats.RackPct)}}</td>

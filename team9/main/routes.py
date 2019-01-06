@@ -316,6 +316,7 @@ def history():
 def lifetime():
     player_summary = db.session.query(Player.idplayer, Player.FirstName, Player.Surname, Player.Active,
                                         func.count(MatchUp.idmatchup).label('MatchesPlayed'),
+                                        func.sum(func.IF(MatchUp.WinLose == 'W', 1, 0)).label('Wins'),
                                         func.sum(MatchUp.MyPlayerActual).label('ActRacksWon'),
                                         func.sum(MatchUp.OpponentActual).label('ActRacksLost'),
                                         (func.sum(MatchUp.MyPlayerActual) / (func.sum(MatchUp.OpponentActual)
@@ -325,6 +326,7 @@ def lifetime():
 
     playoff_summary = db.session.query(Player.idplayer, Player.FirstName, Player.Surname, Player.Active,
                                         func.count(MatchUp.idmatchup).label('MatchesPlayed'),
+                                        func.sum(func.IF(MatchUp.WinLose == 'W', 1, 0)).label('Wins'),
                                         func.sum(MatchUp.MyPlayerActual).label('ActRacksWon'),
                                         func.sum(MatchUp.OpponentActual).label('ActRacksLost'),
                                         (func.sum(MatchUp.MyPlayerActual) / (func.sum(MatchUp.OpponentActual) + func.sum(
@@ -392,7 +394,9 @@ def matchresult(matchid):
 
     results = db.session.query(Player, MatchUp, Match).join(MatchUp, Player.idplayer == MatchUp.Player_ID). \
         join(Match, Match.idmatch == MatchUp.Match_ID).order_by(Player.Surname).filter_by(idmatch=matchid).all()
-    return render_template('matchresult.html', results=results, helper_role="off", hcaps=hcaps, return_to=return_to, collapse=_collapse)
+    result = db.session.query(Result).filter_by(Match_ID=matchid).first()
+    return render_template('matchresult.html', results=results, result=result, helper_role="off",
+                           hcaps=hcaps, return_to=return_to, collapse=_collapse)
 
 
 @bp.route('/opponent/<opp>')

@@ -81,7 +81,7 @@ roles = [('None', 'None'),
 
 
 # Bootstrap themes
-themes = [('yeti', 'Default'),
+themes = [('default', 'Default'),
           ('cerulean', 'Cerulean'),
           ('cosmo', 'Cosmo'),
           ('cyborg', 'Cyborg'),
@@ -96,7 +96,8 @@ themes = [('yeti', 'Default'),
           ('slate', 'Slate'),
           ('spacelab', 'Spacelab'),
           ('superhero', 'Superhero'),
-          ('united', 'United')]
+          ('united', 'United'),
+          ('yeti', 'Yeti')]
 
 # Yes/No selection
 yn = [('Y', 'Yes'),
