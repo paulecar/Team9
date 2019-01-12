@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<h3 class="text-muted" align="center">Match in Progress</h3>
+<div class="jumbotron">
+    <table title="Phone View" class="table table-striped">
+        {% if results %}
+            <div class="table-striped">
+                {% for result in results %}
+                    <tr align="center">
+                        <td>
+                            <a title="display player stats"
+                           class="tab"
+                           href="{{ url_for('main.history', player_id=result.Player.idplayer) }}">
+                            {{result.Player.FirstName}} {{result.Player.Surname}}</a>
+                                ({{result.MatchUp.MyPlayerRank}})
+                            <br>versus<br>
+                            <a class="tab" title="show opponent history" href="{{ url_for('main.opponent', opp=result.MatchUp.OpponentName) }}">
+                            {{result.MatchUp.OpponentName}}</a> ({{result.MatchUp.OpponentRank}})
+                        </td>
+                        <td>Race: {{'{} on {}'.format(hcaps[result.MatchUp.MyPlayerRank][result.MatchUp.OpponentRank][0],
+                            hcaps[result.MatchUp.MyPlayerRank][result.MatchUp.OpponentRank][1])}}<br>
+                            {% if result.MatchUp.WinLose == 'I' %}
+                                <h4><span class="label label-default">IN PROGRESS {{result.MatchUp.MyPlayerScore}}
+                                        : {{result.MatchUp.OpponentScore}}</span></h4>
+                            {% else %}
+                                {% if result.MatchUp.WinLose == "W" %}
+                                    <h4><span class="label label-success">WIN {{result.MatchUp.MyPlayerScore}}
+                                        : {{result.MatchUp.OpponentScore}}</span></h4>
+                                {% else %}
+                                    <h4><span class="label label-warning">LOSS {{result.MatchUp.MyPlayerScore}}
+                                        : {{result.MatchUp.OpponentScore}}</span></h4>
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </table>
+    <div class="row">
+        <p align="center">Matches {{live.MatchUpsWon}} : {{live.MatchUpsLost}} -
+                            Racks {{live.RacksWon}} : {{live.RacksLost}} </p>
+
+    </div>
+</div>
+
+
+{% endblock %}

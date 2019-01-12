@@ -411,9 +411,6 @@ def opponent(opp):
 @bp.route('/phonescore')
 @login_required
 def phonescore():
-    if current_user.UserRole != 'Admin' and current_user.UserRole != 'Helper':
-        return redirect(url_for('main.index'))
-
     _collapse = request.args.get('collapse', default="Y")
     return_to = 'main.phonescore'
 
@@ -439,8 +436,14 @@ def phonescore():
     # Used for tacking live scores
     live = db.session.query(Result).filter_by(Match_ID=nextmatch.idmatch).first()
 
-    return render_template('phonescore.html', title='Phone Scoring', nextmatch=nextmatch, live=live,
-                           results=results, hcaps=hcaps, inprogress=match_inprogress, return_to=return_to, collapse=_collapse)
+    if current_user.UserRole != 'Admin' and current_user.UserRole != 'Helper':
+        return render_template('phoneview.html', title='Phone Score', nextmatch=nextmatch, live=live,
+                               results=results, hcaps=hcaps, inprogress=match_inprogress, return_to=return_to,
+                               collapse=_collapse)
+    else:
+        return render_template('phonescore.html', title='Phone Scoring', nextmatch=nextmatch, live=live,
+                               results=results, hcaps=hcaps, inprogress=match_inprogress, return_to=return_to,
+                               collapse=_collapse)
 
 
 @bp.route('/pickseason')
