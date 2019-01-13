@@ -159,6 +159,10 @@ def deletematchup(matchupid, matchid):
     if current_user.UserRole != 'Admin' and current_user.UserRole != 'Helper':
         return redirect(url_for('main.index'))
 
+    # Collapse needed when using phonescore
+    _collapse = request.args.get('collapse', default="Y")
+    _return= request.args.get('return_to', default="main.index")
+
     MatchUp.query.filter_by(idmatchup=matchupid).delete()
 
     # TODO At some point, replace the trigger and fix this
@@ -193,7 +197,7 @@ def deletematchup(matchupid, matchid):
 
     db.session.commit()
 
-    return redirect(url_for('main.index'))
+    return redirect(url_for(_return, matchid=newmatchup.Match_ID, collapse=_collapse))
 
 
 @bp.route('/drilldown')

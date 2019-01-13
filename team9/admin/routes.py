@@ -64,6 +64,10 @@ def addmatchup(matchid):
         return redirect(url_for('main.index'))
     form = AddMatchUp()
 
+    # Collapse needed when using phonescore
+    _collapse = request.args.get('collapse', default="Y")
+    _return= request.args.get('return_to', default="main.index")
+
     match = Match.query.filter_by(idmatch=matchid).first()
     desc = match.OpposingTeam + ' on ' + str(match.MatchDate)
 
@@ -118,7 +122,7 @@ def addmatchup(matchid):
         flash('Added new match up : Player {} ({}) against {} ({})'.
               format(dict(form.player)[form.playerpick.data], form.playerrank.data, opponent_entered, form.opponentrank.data))
 
-        return redirect(url_for('main.index'))
+        return redirect(url_for(_return, matchid=matchup.Match_ID, collapse=_collapse))
 
     # Renders on the GET or when the input does not validate
     return render_template('admin/addmatchup.html', title='Add Result', form=form, action='Create',

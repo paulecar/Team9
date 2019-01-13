@@ -39,7 +39,8 @@
         <table class="table">
             <tr>
                 <td align="left">
-                    <a class="btn btn-primary btn-xs" title="add head to head" href="{{ url_for('admin.addmatchup', matchid=nextmatch.idmatch) }}">
+                    <a class="btn btn-primary btn-xs" title="add head to head" href="{{ url_for('admin.addmatchup', matchid=nextmatch.idmatch,
+                    return_to=return_to, collapse=collapse) }}">
                         Add Match Up</a>
                 </td>
                 {% if current_user.UserRole == 'Admin' and nextmatch.MatchOver != "Y" and inprogress == False %}

@@ -87,7 +87,9 @@
     </div>
     <div class="row">
         <br>
-        <a class="btn btn-primary btn-sm" title="add head to head" href="{{ url_for('admin.addmatchup', matchid=nextmatch.idmatch) }}">
+        <a class="btn btn-primary btn-sm" title="add head to head"
+           href="{{ url_for('admin.addmatchup',
+           matchid=nextmatch.idmatch, return_to=return_to, collapse=collapse) }}">
                         Add Match Up</a>
     </div>
 </div>
