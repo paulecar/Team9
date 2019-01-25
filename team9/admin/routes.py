@@ -282,18 +282,36 @@ def updatematch(matchid):
     if current_user.UserRole != 'Admin':
         return redirect(url_for('main.index'))
 
+    # Get list of teams
+    teams = db.session.query(Match.OpposingTeam).group_by(Match.OpposingTeam). \
+        order_by(Match.OpposingTeam).all()
+
     # Get match and pre-populate values
     match = Match.query.filter_by(idmatch=matchid).first()
     playoff_val = False
     if match.PlayOff == "Y":
         playoff_val = True
 
-    form = UpdateMatch(matchdate=match.MatchDate, starttime=match.StartTime, playoff=playoff_val, opposingteam=match.OpposingTeam)
+    form = UpdateMatch(matchdate=match.MatchDate, starttime=match.StartTime,
+                       playoff=playoff_val, opposingteam=match.OpposingTeam)
+
+    # Create Pick list for Opposing Team
+    i = 0
+    form.picks.clear()
+    form.picks.append((0, 'New Team..'))
+    for team in teams:
+        i = i + 1
+        form.picks.append((i, team.OpposingTeam))
 
     if form.validate_on_submit():
         match = Match.query.filter_by(idmatch=matchid).first()
 
-        match.OpposingTeam = form.opposingteam.data
+        # If 'New Team' selected then use the form input field,
+        # otherwise the value from selected tuple
+        if form.teampick.data == 0:
+            match.OpposingTeam = form.opposingteam.data
+        else:
+            match.OpposingTeam = form.teampick.choices[form.teampick.data][1]
         match.MatchDate = form.matchdate.data
         match.StartTime = form.starttime.data
         if form.playoff.data:
@@ -302,8 +320,9 @@ def updatematch(matchid):
             match.PlayOff = None
 
         db.session.commit()
-        flash('Match {} against {} changed.'.format(match.idmatch, match.OpposingTeam))
+        flash('Match {} changed to {} on {} at {}.'.format(match.idmatch, match.OpposingTeam, match.MatchDate, match.StartTime))
         return redirect(url_for('main.results'))
+
     # Renders on the GET or when the input does not validate
     return render_template('admin/updatematch.html', title='Update Match', form=form, )
 

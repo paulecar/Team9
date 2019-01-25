@@ -29,7 +29,9 @@ class AddMatch(FlaskForm):
 
 
 class UpdateMatch(FlaskForm):
+    picks = []
     today = get_est()
+    teampick = SelectField('Pick Team', choices=picks, coerce=int)
     opposingteam = StringField('Opposing Team')
     matchdate = DateField('Match Date', validators=[DateField], default=today.today(), format="%Y-%m-%d")
     starttime = TimeField('Start Time', validators=[TimeField])
