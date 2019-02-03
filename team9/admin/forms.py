@@ -62,14 +62,11 @@ class AddPlayer(FlaskForm):
 class AddMatchUp(FlaskForm):
     # Define pick lists
     player = []
-    opponent = []
     playerpick = SelectField('Select Our Player',
                              choices=player, coerce=int)
     playerrank = SelectField('Select Player Rank', choices=ranks)
     playerscore = SelectField('Our Player Scores', choices=racks, coerce=int)
-    opponentpick = SelectField('Select Opponent  or enter New Player',
-                               choices=opponent, coerce=int)
-    opponentname = StringField('Opponent')
+    opponentname = StringField('Opponent (auto complete.... start typing)', id="tags")
     opponentrank = SelectField('Select Opponent Rank', choices=ranks)
     opponentscore = SelectField('Opponent Scores', choices=racks, coerce=int)
     mathematical_elimination = BooleanField('Mathematical elimination stops play', default=False)
@@ -78,10 +75,8 @@ class AddMatchUp(FlaskForm):
     submit = SubmitField('Create Match Up')
 
     def validate_opponentname(self, opponentname):
-        # 0 means 'New Opponent..', which requires a name to be entered
-        if self.opponentpick.data == 0:
-            if len(self.opponentname.data) == 0:
-                raise ValidationError('Select Opponent from list or Enter a name in the text box.')
+        if len(self.opponentname.data) == 0:
+            raise ValidationError("Enter Opponent's Name in the text box.")
 
     def validate_playerscore(self, playerscore):
 

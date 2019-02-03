@@ -1,4 +1,4 @@
-from flask import current_app, render_template, flash, redirect, url_for, request
+from flask import current_app, render_template, flash, redirect, url_for, request, Markup
 from team9 import db
 from team9.models import Player, Match, Season, MatchUp, User, Result, Availability
 from team9.admin.forms import AddMatch, AddSeason, AddPlayer, UserTheme, \
@@ -77,23 +77,15 @@ def addmatchup(matchid):
     for playername in playernames:
         form.player.append((playername.idplayer, playername.FirstName + ' ' + playername.Surname))
 
-    # Opposing team players - from match up history (no join to opposing team data)
-    i = 0
-    form.opponent.clear()
-    form.opponent.append((0, 'New Opponent...'))
+    # List of name passed to JQuery (tagList)
     opponentnames = db.session.query(MatchUp.OpponentName).group_by(MatchUp.OpponentName). \
         order_by(MatchUp.OpponentName).all()
-    for opponentname in opponentnames:
-        i = i + 1
-        form.opponent.append((i, opponentname.OpponentName))
+    opponents = []
+    for opponent in opponentnames:
+            opponents.append(opponent.OpponentName)
 
     if form.validate_on_submit():
-        # If 'New Player' selected then use the form input field,
-        # otherwise the value from selected tuple
-        if form.opponentpick.data == 0:
-            opponent_entered = form.opponentname.data
-        else:
-            opponent_entered = form.opponentpick.choices[form.opponentpick.data][1]
+        opponent_entered = form.opponentname.data
 
         # Get race details so we can calculate 'actual' racks won/lost, etc.
         wire, oppwire, race = getRace(form.playerrank.data, form.opponentrank.data)
@@ -125,8 +117,8 @@ def addmatchup(matchid):
         return redirect(url_for(_return, matchid=matchup.Match_ID, collapse=_collapse))
 
     # Renders on the GET or when the input does not validate
-    return render_template('admin/addmatchup.html', title='Add Result', form=form, action='Create',
-                           opposing_team=desc)
+    return render_template('admin/addmatchup.html', title='Add Matchup', form=form, action='Create',
+                           opposing_team=desc, tagList=Markup(opponents))
 
 
 @bp.route('/addplayer', methods=['GET', 'POST'])
