@@ -31,30 +31,32 @@
     {% if (current_user.UserRole == 'Admin' or current_user.UserRole == 'Helper') and helper_role == "on" %}
         <td class="text-center">
             <a title="add one"
-                   class="btn btn-default btn-xs"
+                   class="btn btn-default btn-sm"
                    href="{{ url_for('main.updatematchup', matchupid=result.MatchUp.idmatchup, player='MyPlayer',
                    return_to=return_to, collapse=collapse) }}">
-                +</a>
+                <span class="glyphicon glyphicon-plus">
+            </a>
     {% else %}
         <td class="text-center">
     {% endif %}
     {% if current_user.UserRole == 'Admin' or (current_user.UserRole == 'Helper' and helper_role == "on") %}
             <a title="update live score"
-               class="btn btn-default btn-xs"
+               class="btn btn-default btn-sm"
                href="{{ url_for('main.livescore', matchupid=result.MatchUp.idmatchup,
                return_to=return_to, collapse=collapse) }}">
-                {{result.MatchUp.MyPlayerScore}} : {{result.MatchUp.OpponentScore}}
-                 <span class="glyphicon glyphicon-edit">
-                </a>
+                <span class="badge">{{result.MatchUp.MyPlayerScore}}</span> :
+                <span class="badge">{{result.MatchUp.OpponentScore}}</span>
+            </a>
     {% else %}
             {{result.MatchUp.MyPlayerScore}} : {{result.MatchUp.OpponentScore}}
     {% endif %}
     {% if (current_user.UserRole == 'Admin' or current_user.UserRole == 'Helper') and helper_role == "on" %}
             <a title="add one"
-               class="btn btn-default btn-xs"
+               class="btn btn-default btn-sm"
                href="{{ url_for('main.updatematchup', matchupid=result.MatchUp.idmatchup, player='Opponent',
                return_to=return_to, collapse=collapse) }}">
-                +</a>
+                <span class="glyphicon glyphicon-plus">
+            </a>
         </td>
     {% endif %}
     <td>
@@ -69,11 +71,13 @@
         {% endif %}
     </td>
     {% if current_user.UserRole == 'Admin' or current_user.UserRole == 'Helper' and helper_role == "on" %}
-        <td><a class="btn btn-danger btn-xs"
+        <td>
+            <a class="btn btn-danger btn-xs"
                title="delete this match up"
                data-toggle="modal"
                data-target="#areyousureMatchUp{{result.MatchUp.idmatchup}}">
-                Delete</a>
+                Delete
+            </a>
         </td>
     {% endif %}
 </tr>

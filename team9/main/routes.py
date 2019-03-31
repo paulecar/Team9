@@ -614,7 +614,7 @@ def unavailable(playerid, matchid, seasonid):
     if current_user.UserRole != 'Admin' and current_user.Player_ID != int(playerid):
         return redirect(url_for('main.index'))
 
-    _return= request.args.get('return_to', default="main.index")
+    _return = request.args.get('return_to', default="main.index")
     _player = request.args.get('player', default="Unknown")
 
     avail = Availability(Match_ID=matchid, Player_ID=playerid, Season_ID=seasonid)
