@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import SelectField, BooleanField, SubmitField, HiddenField
-from wtforms.validators import ValidationError
+from wtforms import SelectField, BooleanField, SubmitField, HiddenField, StringField
+from wtforms.validators import ValidationError, DataRequired
 
 
 # Helpers
@@ -53,3 +53,10 @@ class LiveScore(FlaskForm):
             raise ValidationError('Something went wrong with race lookup (opponent)?')
 
         validateScore(self, race, 'opponent')
+
+
+class OpponentLookup(FlaskForm):
+    opponentname = StringField('Opponent (auto complete.... start typing)', id="tags",
+                               validators=[DataRequired()])
+
+    submit = SubmitField('Lookup')

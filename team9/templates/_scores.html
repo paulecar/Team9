@@ -34,7 +34,7 @@
                    class="btn btn-default btn-sm"
                    href="{{ url_for('main.updatematchup', matchupid=result.MatchUp.idmatchup, player='MyPlayer',
                    return_to=return_to, collapse=collapse) }}">
-                <span class="glyphicon glyphicon-plus">
+                <span class="glyphicon glyphicon-plus"/>
             </a>
     {% else %}
         <td class="text-center">
@@ -55,7 +55,7 @@
                class="btn btn-default btn-sm"
                href="{{ url_for('main.updatematchup', matchupid=result.MatchUp.idmatchup, player='Opponent',
                return_to=return_to, collapse=collapse) }}">
-                <span class="glyphicon glyphicon-plus">
+                <span class="glyphicon glyphicon-plus"/>
             </a>
         </td>
     {% endif %}

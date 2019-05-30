@@ -1,7 +1,7 @@
-from flask import render_template, flash, redirect, url_for, current_app, request
+from flask import render_template, flash, redirect, url_for, current_app, request, Markup
 from team9 import db
 from team9.models import Player, Match, Season, MatchUp, Result, Availability
-from team9.main.forms import LiveScore
+from team9.main.forms import LiveScore, OpponentLookup
 from team9utils import hcaps
 from flask_login import current_user, login_required
 from sqlalchemy import func
@@ -9,6 +9,7 @@ import pygal, copy
 from pygal.style import DarkStyle
 from team9.main import bp
 from team9utils import getRace, setWinner, get_est, kvmGet
+from operator import itemgetter
 
 # Common update logic for livescores and '+' button updates
 def apply_MatchUpUpdates(match, playerscore, opponentscore, math_elim):
@@ -229,6 +230,35 @@ def drilldown():
     return render_template('drilldown.html', history=select_history)
 
 
+@bp.route('/recentform')
+@login_required
+def recentform():
+
+    if current_user.Player_ID is None:
+        return redirect(url_for('main.index'))
+
+    _lookback = request.args.get('lookback', default=10)
+
+    players = Player.query.filter_by(Active='Y').order_by(Player.Surname).all()
+
+    player_form = []
+    for p in players:
+        form = db.session.query(Player.idplayer, MatchUp.WinLose, Match.MatchDate).\
+            filter_by(idplayer=p.idplayer).\
+            join(MatchUp, MatchUp.Player_ID == Player.idplayer). \
+            join(Match, MatchUp.Match_ID == Match.idmatch). \
+            filter_by(MatchOver="Y").\
+            order_by(Match.MatchDate.desc()).limit(int(_lookback)).all()
+
+        f = []
+        for m in form:
+            f.append(m.WinLose)
+
+        player_form.append((p.FirstName + " " + p.Surname, p.idplayer, f))
+
+    return render_template('recentform.html', player_form=player_form)
+
+
 @bp.route('/history')
 @login_required
 def history():
@@ -326,7 +356,8 @@ def lifetime():
                                         (func.sum(MatchUp.MyPlayerActual) / (func.sum(MatchUp.OpponentActual)
                                                                              + func.sum(MatchUp.MyPlayerActual))).label('RackPct'),
                                         (func.sum(func.IF(MatchUp.WinLose == 'W', 1, 0)) / func.count(MatchUp.WinLose)).label('WinPct')). \
-                                    join(MatchUp, MatchUp.Player_ID == Player.idplayer).order_by(Player.Surname).group_by(Player.idplayer).all()
+                                    join(MatchUp, MatchUp.Player_ID == Player.idplayer).\
+                                    order_by('WinPct').group_by(Player.idplayer).all()
 
     playoff_summary = db.session.query(Player.idplayer, Player.FirstName, Player.Surname, Player.Active,
                                         func.count(MatchUp.idmatchup).label('MatchesPlayed'),
@@ -340,9 +371,13 @@ def lifetime():
                                     join(MatchUp, MatchUp.Player_ID == Player.idplayer). \
                                     join(Match, MatchUp.Match_ID == Match.idmatch). \
                                     filter_by(PlayOff="Y"). \
-                                    order_by(Player.Surname).group_by(Player.idplayer).all()
+                                    order_by('WinPct').group_by(Player.idplayer).all()
 
-    return render_template('lifetime.html', summary=player_summary, playoffs=playoff_summary)
+    # Sort results by WinPct (col 9 in tuple)
+    s = sorted(playoff_summary, key=lambda tup: tup[9], reverse = True)
+    s1 = sorted(player_summary, key=lambda tup: tup[9], reverse=True)
+
+    return render_template('lifetime.html', summary=s1, playoffs=s)
 
 
 @bp.route('/livescore/<matchupid>', methods=['GET', 'POST'])
@@ -409,7 +444,26 @@ def opponent(opp):
     opp_history = db.session.query(Match, MatchUp, Player).\
         join(MatchUp, Match.idmatch == MatchUp.Match_ID).filter_by(OpponentName=opp). \
         join(Player, Player.idplayer == MatchUp.Player_ID).order_by(Match.MatchDate.desc()).all();
+
     return render_template('opponent.html', history=opp_history, opp=opp)
+
+
+@bp.route('/opponentlkup', methods=['GET', 'POST'])
+@login_required
+def opponentlkup():
+    # List of name passed to JQuery (tagList)
+    opponentnames = db.session.query(MatchUp.OpponentName).group_by(MatchUp.OpponentName). \
+        order_by(MatchUp.OpponentName).all()
+    opponents = []
+    for opponent in opponentnames:
+            opponents.append(opponent.OpponentName)
+
+    form = OpponentLookup()
+
+    if form.validate_on_submit():
+        return redirect(url_for('main.opponent', opp=form.opponentname.data))
+
+    return render_template('opponentlkup.html', title='Lookup Opponent', form=form, tagList=Markup(opponents))
 
 
 @bp.route('/phonescore')

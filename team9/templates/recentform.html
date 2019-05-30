@@ -1,10 +1,36 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+{% block app_content %}
+    <h2 class="text-muted" align="center"> Recent Form </h2>
+    <div class="table-responsive">
+        <table title="Team Recent Form" class="table table-hover">
+            <tr>
+                <th>Player</th>
+                <th>Recent</th>
+                <th>Form</th>
+                <th>Older</th>
+            </tr>
+            {% for player in player_form %}
+                <tr>
+                    <td>
+                        <a title="display player stats"
+                           class="tab"
+                           href="{{ url_for('main.history', player_id=player[1]) }}">
+                            {{player[0]}}
+                        </a>
+                    </td>
+                    <td></td>
+                    <td>
+                        {%  for f in player[2] %}
+                            {% if f == "W" %}
+                                <span class="label label-success">W</span>
+                            {% else %}
+                                <span class="label label-warning">L</span>
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td></td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+{% endblock %}
