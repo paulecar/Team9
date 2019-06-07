@@ -5,9 +5,12 @@
         <table title="Team Recent Form" class="table table-hover">
             <tr>
                 <th>Player</th>
-                <th>Recent</th>
                 <th>Form</th>
-                <th>Older</th>
+                <th>
+                    <span class="glyphicon  glyphicon-menu-left"/>
+                    <b>History with Opponent Ranking</b>
+                    <span class="glyphicon  glyphicon-menu-right"/>
+                </th>
             </tr>
             {% for player in player_form %}
                 <tr>
@@ -18,17 +21,16 @@
                             {{player[0]}}
                         </a>
                     </td>
-                    <td></td>
+                    <td>{{ player[2] }}</td>
                     <td>
-                        {%  for f in player[2] %}
-                            {% if f == "W" %}
-                                <span class="label label-success">W</span>
+                        {%  for f in player[3] %}
+                            {% if f[0] == "W" %}
+                                <span class="label label-success">{{f[1]}}</span>
                             {% else %}
-                                <span class="label label-warning">L</span>
+                                <span class="label label-warning">{{f[1]}}</span>
                             {% endif %}
                         {% endfor %}
                     </td>
-                    <td></td>
                 </tr>
             {% endfor %}
         </table>

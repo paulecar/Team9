@@ -243,7 +243,7 @@ def recentform():
 
     player_form = []
     for p in players:
-        form = db.session.query(Player.idplayer, MatchUp.WinLose, Match.MatchDate).\
+        form = db.session.query(Player.idplayer, MatchUp.WinLose, MatchUp.OpponentRank , Match.MatchDate).\
             filter_by(idplayer=p.idplayer).\
             join(MatchUp, MatchUp.Player_ID == Player.idplayer). \
             join(Match, MatchUp.Match_ID == Match.idmatch). \
@@ -251,10 +251,16 @@ def recentform():
             order_by(Match.MatchDate.desc()).limit(int(_lookback)).all()
 
         f = []
+        w = 0
+        l = 0
         for m in form:
-            f.append(m.WinLose)
+            f.append((m.WinLose, m.OpponentRank))
+            if m.WinLose == 'W':
+                w+=1
+            else:
+                l+=1
 
-        player_form.append((p.FirstName + " " + p.Surname, p.idplayer, f))
+        player_form.append((p.FirstName + " " + p.Surname, p.idplayer, str(w)+":"+str(l), f))
 
     return render_template('recentform.html', player_form=player_form)
 

@@ -53,7 +53,7 @@
                                href="{{ url_for('main.team', team=match.Match.OpposingTeam) }}">
                             {{match.Match.OpposingTeam}}</a>
                         </td>
-                        <td>{{match.Match.MatchDate}}</td>
+                        <td>{{"{:%A, %d %b }".format(match.Match.MatchDate)}} </td>
                         <td>
                             {% if match.Match.PlayOff == 'Y' %}
                                 <span class="label label-info">PLAYOFF</span>
@@ -96,7 +96,7 @@
                                href="{{ url_for('main.team', team=match.Match.OpposingTeam) }}">
                             {{match.Match.OpposingTeam}}</a>
                         </td>
-                        <td>{{match.Match.MatchDate}}</td>
+                        <td>{{"{:%A, %d %b }".format(match.Match.MatchDate)}} </td>
                         <td>{{"{:%H:%M}".format(match.Match.StartTime)}}</td>
                         <td>
                             {% if match.Match.PlayOff == 'Y' %}

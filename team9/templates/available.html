@@ -17,7 +17,7 @@
                                href="{{ url_for('main.team', team=match.Match.OpposingTeam) }}">
                             {{match.Match.OpposingTeam}}</a>
                         </td>
-                        <td>{{match.Match.MatchDate}} - {{"{:%H:%M}".format(match.Match.StartTime)}}</td>
+                        <td>{{"{:%A, %d %b }".format(match.Match.MatchDate)}}  - {{"{:%H:%M}".format(match.Match.StartTime)}}</td>
                         {% for a in avail[match.Match.idmatch] %}
                             <td>
                             {% if current_user.Player_ID == a['id'] or current_user.UserRole == 'Admin' %}
@@ -27,21 +27,21 @@
                                        href="{{ url_for('main.unavailable', playerid=a['id'],
                                        matchid=match.Match.idmatch, seasonid=seasonid,
                                        player=a['initials'], return_to=return_to) }}">
-                                        <span class="glyphicon glyphicon-ok-sign">
+                                        <span class="glyphicon glyphicon-ok-sign"/>
                                     </a>
                                 {% else %}
                                     <a title="mark available"
                                        class="btn btn-warning btn-xs"
                                        href="{{ url_for('main.available', availid=a['a_id'],
                                        player=a['initials'], playerid=a['id'], return_to=return_to) }}">
-                                        <span class="glyphicon glyphicon-remove-sign">
+                                        <span class="glyphicon glyphicon-remove-sign"/>
                                     </a>
                                 {% endif %}
                             {% else %}
                                 {% if a['avail'] %}
-                                    <span class="label label-success"><span class="glyphicon glyphicon-ok"></span>
+                                    <span class="label label-success"/><span class="glyphicon glyphicon-ok"/>
                                 {% else %}
-                                    <span class="label label-warning"><span class="glyphicon glyphicon-remove"></span>
+                                    <span class="label label-warning"/><span class="glyphicon glyphicon-remove"/>
                                 {% endif %}
                             {% endif %}
                             </td>
