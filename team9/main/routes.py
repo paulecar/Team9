@@ -11,6 +11,7 @@ from team9.main import bp
 from team9utils import getRace, setWinner, get_est, kvmGet
 from operator import itemgetter
 
+
 # Common update logic for livescores and '+' button updates
 def apply_MatchUpUpdates(match, playerscore, opponentscore, math_elim):
 
@@ -42,6 +43,44 @@ def apply_MatchUpUpdates(match, playerscore, opponentscore, math_elim):
     db.session.commit()
 
     return
+
+
+# Calculate the racks we can lose
+def can_we_win(matchups):
+    max_racks = 0
+    us = 0
+    them = 0
+    losses = 0
+    us_avail = 0
+    them_avail = 0
+    msg = str()
+    ip = False
+
+    if len(matchups) == 4:
+        for r in matchups:
+            max_racks = max_racks + r.MatchUp.MatchUpRace
+            us = us + r.MatchUp.MyPlayerScore
+            them = them + r.MatchUp.OpponentScore
+
+            if r.MatchUp.WinLose == "L":
+                losses += 1
+
+            if r.MatchUp.WinLose == "I":
+                ip = True
+                us_avail = us_avail + (r.MatchUp.MatchUpRace - r.MatchUp.MyPlayerScore)
+                them_avail = them_avail + (r.MatchUp.MatchUpRace - r.MatchUp.OpponentScore)
+    if ip:
+        if (us + us_avail) < them or losses > 2:
+            msg = "Sadly, we cannot win from here."
+        elif us > (them + them_avail):
+            msg = "Looks like we have this in the bag"
+        elif (us + us_avail) - them == 0:
+            msg = "Only a draw available from here."
+        else:
+            margin = (us + us_avail) - them
+            msg = "We can win, but can only lose {} more or {} for a tie-break".format(margin - 1, margin)
+
+    return msg
 
 
 @bp.before_app_request
@@ -84,7 +123,7 @@ def index():
 
     # Current matchup details to display in progress match
     results = db.session.query(Player, MatchUp, Match).join(MatchUp, Player.idplayer == MatchUp.Player_ID). \
-        join(Match, Match.idmatch == MatchUp.Match_ID).filter_by(idmatch=nextmatch.idmatch).order_by(Player.Surname).all()
+        join(Match, Match.idmatch == MatchUp.Match_ID).filter_by(idmatch=nextmatch.idmatch).order_by(MatchUp.idmatchup).all()
 
     # Look for match in progress to determine whether to show the 'match over' button
     match_inprogress = False
@@ -98,10 +137,13 @@ def index():
 
     # Used for tacking live scores
     live = db.session.query(Result).filter_by(Match_ID=nextmatch.idmatch).first()
+
+    livemessage = can_we_win(results)
+
     return render_template('index.html', season=season,
                            players=players, nextmatch=nextmatch, absent=absent,
                            captainsMessage=kvmGet('CAPTAINSMESSAGE'),
-                           results=results, live=live, helper_role="on",
+                           results=results, live=live, livemessage=livemessage, helper_role="on",
                            hcaps=hcaps, inprogress=match_inprogress, return_to=return_to)
 
 
@@ -217,7 +259,7 @@ def drilldown():
             join(Season, Match.Season_ID == Season.idseason). \
             join(Player, MatchUp.Player_ID == Player.idplayer). \
             filter(MatchUp.Player_ID == _player_id, Season.idseason == _season_id). \
-            order_by(Match.MatchDate).all()
+            order_by(Match.MatchDate.desc()).all()
 
     if _playoff:
         select_history = db.session.query(Match, MatchUp, Season, Player). \
@@ -225,44 +267,9 @@ def drilldown():
             join(Season, Match.Season_ID == Season.idseason). \
             join(Player, MatchUp.Player_ID == Player.idplayer). \
             filter(MatchUp.Player_ID == _player_id, Match.PlayOff == _playoff). \
-            order_by(Match.MatchDate).all()
+            order_by(Match.MatchDate.desc()).all()
 
     return render_template('drilldown.html', history=select_history)
-
-
-@bp.route('/recentform')
-@login_required
-def recentform():
-
-    if current_user.Player_ID is None:
-        return redirect(url_for('main.index'))
-
-    _lookback = request.args.get('lookback', default=10)
-
-    players = Player.query.filter_by(Active='Y').order_by(Player.Surname).all()
-
-    player_form = []
-    for p in players:
-        form = db.session.query(Player.idplayer, MatchUp.WinLose, MatchUp.OpponentRank , Match.MatchDate).\
-            filter_by(idplayer=p.idplayer).\
-            join(MatchUp, MatchUp.Player_ID == Player.idplayer). \
-            join(Match, MatchUp.Match_ID == Match.idmatch). \
-            filter_by(MatchOver="Y").\
-            order_by(Match.MatchDate.desc()).limit(int(_lookback)).all()
-
-        f = []
-        w = 0
-        l = 0
-        for m in form:
-            f.append((m.WinLose, m.OpponentRank))
-            if m.WinLose == 'W':
-                w+=1
-            else:
-                l+=1
-
-        player_form.append((p.FirstName + " " + p.Surname, p.idplayer, str(w)+":"+str(l), f))
-
-    return render_template('recentform.html', player_form=player_form)
 
 
 @bp.route('/history')
@@ -438,7 +445,7 @@ def matchresult(matchid):
     _collapse = request.args.get('collapse', default="Y")
 
     results = db.session.query(Player, MatchUp, Match).join(MatchUp, Player.idplayer == MatchUp.Player_ID). \
-        join(Match, Match.idmatch == MatchUp.Match_ID).order_by(Player.Surname).filter_by(idmatch=matchid).all()
+        join(Match, Match.idmatch == MatchUp.Match_ID).order_by(MatchUp.idmatchup).filter_by(idmatch=matchid).all()
     result = db.session.query(Result).filter_by(Match_ID=matchid).first()
     return render_template('matchresult.html', results=results, result=result, helper_role="off",
                            hcaps=hcaps, return_to=return_to, collapse=_collapse)
@@ -488,7 +495,7 @@ def phonescore():
 
     # Current matchup details to display in progress match
     results = db.session.query(Player, MatchUp, Match).join(MatchUp, Player.idplayer == MatchUp.Player_ID). \
-        join(Match, Match.idmatch == MatchUp.Match_ID).filter_by(idmatch=nextmatch.idmatch).order_by(Player.Surname).all()
+        join(Match, Match.idmatch == MatchUp.Match_ID).filter_by(idmatch=nextmatch.idmatch).order_by(MatchUp.idmatchup).all()
 
     # Look for match in progress to determine whether to show the 'match over' button
     match_inprogress = False
@@ -588,6 +595,41 @@ def ranking(season_id=None, season_name=None):
                            rankings1=rankings_matchpct,
                            rankings2 = rankings_rackspct,
                            rankings3 = rankings_actpct)
+
+
+@bp.route('/recentform')
+@login_required
+def recentform():
+
+    if current_user.Player_ID is None:
+        return redirect(url_for('main.index'))
+
+    _lookback = request.args.get('lookback', default=10)
+
+    players = Player.query.filter_by(Active='Y').order_by(Player.Surname).all()
+
+    player_form = []
+    for p in players:
+        form = db.session.query(Player.idplayer, MatchUp.WinLose, MatchUp.OpponentRank , Match.MatchDate). \
+            filter_by(idplayer=p.idplayer). \
+            join(MatchUp, MatchUp.Player_ID == Player.idplayer). \
+            join(Match, MatchUp.Match_ID == Match.idmatch). \
+            filter_by(MatchOver="Y"). \
+            order_by(Match.MatchDate.desc()).limit(int(_lookback)).all()
+
+        f = []
+        w = 0
+        l = 0
+        for m in form:
+            f.append((m.WinLose, m.OpponentRank))
+            if m.WinLose == 'W':
+                w+=1
+            else:
+                l+=1
+
+        player_form.append((p.FirstName + " " + p.Surname, p.idplayer, str(w)+":"+str(l), f))
+
+    return render_template('recentform.html', player_form=player_form)
 
 
 @bp.route('/results')

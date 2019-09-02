@@ -31,7 +31,10 @@
             {% include '_scores.html' %}
         </table>
         <p align="center">Matches {{live.MatchUpsWon}} : {{live.MatchUpsLost}} -
-                            Racks {{live.RacksWon}} : {{live.RacksLost}} </p>
+                            Racks {{live.RacksWon}} : {{live.RacksLost}}
+            <br>
+            {{ livemessage }}
+        </p>
     </div>
     {% endif %}
     {% if current_user.UserRole == 'Admin' or current_user.UserRole == 'Helper' %}
