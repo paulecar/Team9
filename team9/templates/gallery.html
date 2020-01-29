@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block app_content %}
+    <h2 class="text-muted" align="center">Pool Porn Gallery</h2>
+
+    <div class="table-row">
+        {% for i in porn %}
+            <img src="{{i}}" alt="Pool Porn" style="width:128px;">
+        {% endfor %}
+    </div>
+{% endblock %}

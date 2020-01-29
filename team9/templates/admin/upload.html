@@ -5,7 +5,7 @@
     <div class="row">
         <div class="col-md-2"></div>
         <div class="col-md-8">
-            <h4 class="bg-warning text-muted" align="center">Upload Image</h1>
+            <h4 class="bg-warning text-muted" align="center">Upload Image</h4>
             <form action = "{{ url_for('admin.uploader') }}" method = "POST" enctype = "multipart/form-data">
                 {{ form.hidden_tag() }}
                 <div class="well">Please upload weekly image</div>
@@ -13,7 +13,7 @@
                 <hr>
                 <p>{{ form.submit(class_="btn btn-info") }}</p>
                 <div class="well">
-                    <img src="https://www.yourackdiscipline.com/static/{{image}}" class="img-thumbnail" width="25%" alt="Your Moment of Pool Zen">
+                    <img src={{image}} class="img-thumbnail" style="width:256px;" alt="Your Moment of Pool Zen">
                 </div>
             </form>
         </div>

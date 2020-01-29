@@ -3,6 +3,5 @@ __pycache__/
 team9/__pycache__/
 venv/
 *.xlsx
-uploads/
-static/
+team9/static/*.*
 logs/

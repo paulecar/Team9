@@ -26,6 +26,7 @@ class Config(object):
     # Image uploads - upload for MIME, static for inline
     UPLOAD_FOLDER = './uploads'
     STATIC_FILES = './static'
+    MOVE_TARGET = './team9/static'
     ALLOWED_EXTENSIONS = set(['jpg'])
 
     # URL for pygal links

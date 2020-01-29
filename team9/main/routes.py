@@ -5,11 +5,13 @@ from team9.main.forms import LiveScore, OpponentLookup
 from team9utils import hcaps
 from flask_login import current_user, login_required
 from sqlalchemy import func
-import pygal, copy
 from pygal.style import DarkStyle
 from team9.main import bp
 from team9utils import getRace, setWinner, get_est, kvmGet
 from operator import itemgetter
+import pygal
+import copy
+import os
 
 
 # Common update logic for livescores and '+' button updates
@@ -45,40 +47,114 @@ def apply_MatchUpUpdates(match, playerscore, opponentscore, math_elim):
     return
 
 
+def parse_match_ups(match_ups):
+    match_info = dict.fromkeys(["Matches",
+                                "Wins",
+                                "Losses",
+                                "Racks For",
+                                "Racks Against",
+                                "Avail For",
+                                "Avail Against",
+                                "Diff"], 0)
+
+    for r in match_ups:
+        print("Match:", r.Match.idmatch, "Match Up :", r.MatchUp.idmatchup,
+              "Race :", r.MatchUp.MatchUpRace, r.MatchUp.MyPlayerScore, ":", r.MatchUp.OpponentScore)
+        if r.MatchUp.WinLose == "W":
+            match_info["Wins"] += 1
+        if r.MatchUp.WinLose == "L":
+            match_info["Losses"] += 1
+        if r.MatchUp.WinLose == "I":
+            match_info["Avail For"] += (r.MatchUp.MatchUpRace - r.MatchUp.MyPlayerScore)
+            match_info["Avail Against"] += (r.MatchUp.MatchUpRace - r.MatchUp.OpponentScore)
+
+        match_info["Racks For"] += r.MatchUp.MyPlayerScore
+        match_info["Racks Against"] += r.MatchUp.OpponentScore
+
+    match_info["Matches"] = len(match_ups)
+    match_info["Diff"] = match_info["Racks For"] - match_info["Racks Against"]
+    match_info["Max For"] = match_info["Avail For"] + match_info["Racks For"]
+    match_info["Max Against"] = match_info["Avail Against"] + match_info["Racks Against"]
+
+    print(match_info)
+
+    return match_info
+
+
 # Calculate the racks we can lose
-def can_we_win(matchups):
-    max_racks = 0
-    us = 0
-    them = 0
-    losses = 0
-    us_avail = 0
-    them_avail = 0
-    msg = str()
-    ip = False
+def can_we_win(match_info):
+    # Handles situation when just one match is called
+    if match_info["Matches"] == 1:
+        msg = "Let's go!"
+        return msg
 
-    if len(matchups) == 4:
-        for r in matchups:
-            max_racks = max_racks + r.MatchUp.MatchUpRace
-            us = us + r.MatchUp.MyPlayerScore
-            them = them + r.MatchUp.OpponentScore
-
-            if r.MatchUp.WinLose == "L":
-                losses += 1
-
-            if r.MatchUp.WinLose == "I":
-                ip = True
-                us_avail = us_avail + (r.MatchUp.MatchUpRace - r.MatchUp.MyPlayerScore)
-                them_avail = them_avail + (r.MatchUp.MatchUpRace - r.MatchUp.OpponentScore)
-    if ip:
-        if (us + us_avail) < them or losses > 2:
-            msg = "Sadly, we cannot win from here."
-        elif us > (them + them_avail):
-            msg = "Looks like we have this in the bag"
-        elif (us + us_avail) - them == 0:
-            msg = "Only a draw available from here."
+    # Handles first round combinations where no winner can be decided yet
+    if match_info["Matches"] == 2:
+        if match_info["Wins"] == 0 and match_info["Losses"] == 0:
+            if match_info["Racks For"] > match_info["Racks Against"]:
+                msg = "Off to a good start."
+            else:
+                msg = "A bit shaky, but early days."
         else:
-            margin = (us + us_avail) - them
-            msg = "We can win, but can only lose {} more or {} for a tie-break".format(margin - 1, margin)
+            if match_info["Wins"] > match_info["Losses"] or match_info["Racks For"] > match_info["Racks Against"]:
+                msg = "Woo hoo! We're ahead."
+            else:
+                msg = " Nobody Panic. Not over yet."
+        return msg
+
+    # Could be decided at this point - handles 3 wins, even when last match is in progress, and the tie break stage
+    if match_info["Matches"] > 2:
+        if match_info["Losses"] >= 3:
+            msg = "It's all over. We Suck."
+            return msg
+        elif match_info["Wins"] >= 3:
+            msg = "It's in the bag. We Rock."
+            return msg
+        elif match_info["Wins"] == 2 and match_info["Losses"] == 2:
+            msg = "Oh, the humanity! Tie Break decides the match."
+            return msg
+        # Handles intermediate situation when the last match is yet to be called
+        elif match_info["Matches"] == 3:
+            if match_info["Wins"] > match_info["Losses"]:
+                if match_info["Racks For"] > match_info["Racks Against"]:
+                    msg = "Two wins is good. We're on track."
+                else:
+                    msg = "Two wins is good. But we're {} racks behind, which is odd?".format(match_info["Diff"] + -1)
+            else:
+                if match_info["Diff"] == 0:
+                    msg = "All square. Still all to play for."
+                elif match_info["Diff"] > 0:
+                    msg = "By no means certain of a win, but at least we are {} racks ahead.".format(match_info["Diff"])
+                else:
+                    msg = "We're making is hard on ourselves. Behind by {} racks.".format(match_info["Diff"] * -1)
+            return msg
+
+    # Handles all situations for the second round (3rd and 4th matches called and still no result)
+    if match_info["Wins"] == 2:
+        required = match_info["Max Against"] - match_info["Racks For"] + 1
+        if required == 0:
+            msg = "We have this in the bag!"
+        else:
+            msg = "We need to win one more match, or win {} more racks ({} to tie).".format(required, required - 1)
+        return msg
+    if match_info["Losses"] == 2:
+        required = match_info["Max For"] - match_info["Racks Against"] - 1
+        if required < 0:
+            msg = "We've blown it! No win from here."
+        else:
+            msg = "Gonna be rough! We need to win both of remaining matches, " \
+                  "and can only lose {} more racks (or {} to tie).".format(required, required + 1)
+        return msg
+    if match_info["Wins"] == 1 and match_info["Losses"] == 1:
+        if match_info["Racks Against"] > match_info["Max For"]:
+            msg = "We need to win both matches to win from here."
+        elif match_info["Racks For"] > match_info["Max Against"]:
+            msg = "We just need to win one of these."
+        else:
+            margin = match_info["Max For"] - match_info["Racks Against"]
+            msg = "Gotta win one match, and can only lose {} more racks ({} for a tie).".format(margin - 1, margin)
+    else:
+        msg = "I'm confused. This situation is hard to figure out?"
 
     return msg
 
@@ -135,15 +211,16 @@ def index():
     if len(results) < 4:
         match_inprogress = True
 
-    # Used for tacking live scores
+    # Used for tracking live scores
     live = db.session.query(Result).filter_by(Match_ID=nextmatch.idmatch).first()
 
-    livemessage = can_we_win(results)
+    match_info = parse_match_ups(results)
+    live_message = can_we_win(match_info)
 
     return render_template('index.html', season=season,
                            players=players, nextmatch=nextmatch, absent=absent,
                            captainsMessage=kvmGet('CAPTAINSMESSAGE'),
-                           results=results, live=live, livemessage=livemessage, helper_role="on",
+                           results=results, live=live, livemessage=live_message, helper_role="on",
                            hcaps=hcaps, inprogress=match_inprogress, return_to=return_to)
 
 
@@ -270,6 +347,15 @@ def drilldown():
             order_by(Match.MatchDate.desc()).all()
 
     return render_template('drilldown.html', history=select_history)
+
+
+@bp.route('/gallery')
+@login_required
+def gallery():
+    p = os.path.join(current_app.config['MOVE_TARGET'])
+    porn = os.listdir(p)
+    porn_list = [current_app.config['STATIC_FILES'] + "/" + file for file in porn]
+    return render_template('gallery.html', porn=porn_list)
 
 
 @bp.route('/history')
@@ -507,14 +593,17 @@ def phonescore():
     # Used for tacking live scores
     live = db.session.query(Result).filter_by(Match_ID=nextmatch.idmatch).first()
 
+    match_info = parse_match_ups(results)
+    live_message = can_we_win(match_info)
+
     if current_user.UserRole != 'Admin' and current_user.UserRole != 'Helper':
         return render_template('phoneview.html', title='Phone Score', nextmatch=nextmatch, live=live,
                                results=results, hcaps=hcaps, inprogress=match_inprogress, return_to=return_to,
-                               collapse=_collapse)
+                               collapse=_collapse,livemessage=live_message)
     else:
         return render_template('phonescore.html', title='Phone Scoring', nextmatch=nextmatch, live=live,
                                results=results, hcaps=hcaps, inprogress=match_inprogress, return_to=return_to,
-                               collapse=_collapse)
+                               collapse=_collapse, livemessage=live_message)
 
 
 @bp.route('/pickseason')
@@ -582,7 +671,8 @@ def ranking(season_id=None, season_name=None):
         display_season_name = season.SeasonName
 
     # TODO Another view to remove
-    base_query = "SELECT * FROM AmsterdamTeam9.player_ranking WHERE idseason = {} ".format(query_season)
+    base_query = "SELECT * FROM AmsterdamTeam9.player_ranking WHERE idseason = {} " \
+                 "and RacksPct is not Null and ActPct is not Null ".format(query_season)
 
     # TODO Consider removing views entirely and writing SQLALchemy query
     # Three separate queries to satisfy sort order - 'execute' used because 'player_ranking' is a view
@@ -593,8 +683,8 @@ def ranking(season_id=None, season_name=None):
     return render_template('rank.html', return_to=return_to,
                            season=display_season_name,
                            rankings1=rankings_matchpct,
-                           rankings2 = rankings_rackspct,
-                           rankings3 = rankings_actpct)
+                           rankings2=rankings_rackspct,
+                           rankings3=rankings_actpct)
 
 
 @bp.route('/recentform')
