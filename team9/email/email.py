@@ -92,7 +92,7 @@ def send_image_email(recipients, text_body, html_body):
     # If necessary, replace us-west-2 with the AWS Region you're using for Amazon SES.
     AWS_REGION = "us-east-1"
 
-    SUBJECT = "You Rack Discipline Too"
+    SUBJECT = "You Rack Discipline"
     BODY_TEXT = text_body
     BODY_HTML = html_body
 

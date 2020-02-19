@@ -52,7 +52,6 @@ def sendemail():
                  "The Rule of the Bog is in full stench, and our line up is: " + ", ".join(lineup) + "\r\n\n" +
                  "Please CONFIRM that you are able to attend.")
 
-    cclist = ['paulecar@mac.com']
     image_file = kvmGet('LATESTPICTURE')
     # cid = "cid:" + current_app.config['STATIC_FILES'] + "/" + image_file
 
