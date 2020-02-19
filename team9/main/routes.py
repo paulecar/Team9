@@ -96,13 +96,14 @@ def can_we_win(match_info):
             else:
                 msg = "A bit shaky, but early days."
         else:
-            if match_info["Wins"] > match_info["Losses"] or match_info["Racks For"] > match_info["Racks Against"]:
+            if match_info["Wins"] > match_info["Losses"] or \
+                    match_info["Racks For"] > match_info["Racks Against"]:
                 msg = "Woo hoo! We're ahead."
             else:
                 msg = " Nobody Panic. Not over yet."
         return msg
 
-    # Could be decided at this point - handles 3 wins, even when last match is in progress, and the tie break stage
+    # Could be decided at this point - handles 3 wins, even when last match is in progress
     if match_info["Matches"] > 2:
         if match_info["Losses"] >= 3:
             msg = "It's all over. We Suck."
@@ -110,48 +111,73 @@ def can_we_win(match_info):
         elif match_info["Wins"] >= 3:
             msg = "It's in the bag. We Rock."
             return msg
-        elif match_info["Wins"] == 2 and match_info["Losses"] == 2:
-            msg = "Oh, the humanity! Tie Break decides the match."
-            return msg
-        # Handles intermediate situation when the last match is yet to be called
-        elif match_info["Matches"] == 3:
-            if match_info["Wins"] > match_info["Losses"]:
-                if match_info["Racks For"] > match_info["Racks Against"]:
-                    msg = "Two wins is good. We're on track."
-                else:
-                    msg = "Two wins is good. But we're {} racks behind, which is odd?".format(match_info["Diff"] + -1)
-            else:
-                if match_info["Diff"] == 0:
-                    msg = "All square. Still all to play for."
-                elif match_info["Diff"] > 0:
-                    msg = "By no means certain of a win, but at least we are {} racks ahead.".format(match_info["Diff"])
-                else:
-                    msg = "We're making is hard on ourselves. Behind by {} racks.".format(match_info["Diff"] * -1)
-            return msg
 
-    # Handles all situations for the second round (3rd and 4th matches called and still no result)
+    # Handles 2/2 finish and tie break stage while waiting for match 5
+    if match_info["Wins"] == 2 and match_info["Losses"] == 2 and match_info["Matches"] == 4:
+        if match_info["Racks For"] == match_info["Racks Against"]:
+            msg = "Oh, the humanity! Tie Break decides the match."
+        else:
+            if match_info["Racks For"] > match_info["Racks Against"]:
+                msg = "Phew! That was close but we made it."
+            else:
+                msg = "Damn! That was close but no cigar."
+        return msg
+
+    # Handles intermediate situation when the last match is yet to be called
+    if match_info["Matches"] == 3:
+        if match_info["Wins"] > match_info["Losses"]:
+            if match_info["Racks For"] > match_info["Racks Against"]:
+                msg = "Two wins is good. We're on track."
+            else:
+                msg = "Two wins is good. But we're {} racks behind, which is odd?".format(match_info["Diff"] + -1)
+        else:
+            if match_info["Diff"] == 0:
+                msg = "All square. Still all to play for."
+            elif match_info["Diff"] > 0:
+                msg = "By no means certain of a win, but at least we are {} racks ahead.".format(match_info["Diff"])
+            else:
+                msg = "We're making is hard on ourselves. Behind by {} racks.".format(match_info["Diff"] * -1)
+        return msg
+
+    # Handles tie break progress
+    if match_info["Matches"] == 5:
+        if match_info["Racks For"] >= match_info["Racks Against"]:
+            msg = "Gotta stay ahead to win."
+        else:
+            msg = "Falling behind."
+        return msg
+
+    # Handles remaining situations in second round (3rd and 4th matches called and still no result)
     if match_info["Wins"] == 2:
         required = match_info["Max Against"] - match_info["Racks For"] + 1
-        if required == 0:
-            msg = "We have this in the bag!"
+        if required <= 0:
+            msg = "We have this in the bag! We've gotten enough racks."
         else:
             msg = "We need to win one more match, or win {} more racks ({} to tie).".format(required, required - 1)
         return msg
+
     if match_info["Losses"] == 2:
-        required = match_info["Max For"] - match_info["Racks Against"] - 1
+        required = match_info["Max For"] - match_info["Racks Against"]
         if required < 0:
-            msg = "We've blown it! No win from here."
+            msg = "We've blown it! No win from here. We've lost too many racks."
+        elif required == 0:
+            msg = "Can't lose another rack! Only a draw available."
         else:
-            msg = "Gonna be rough! We need to win both of remaining matches, " \
-                  "and can only lose {} more racks (or {} to tie).".format(required, required + 1)
+            if match_info["Wins"] == 1:
+                msg = "Gonna be rough! We need to win both matches, " \
+                      "and can only lose {} more racks (or {} to tie).".format(required, required + 1)
+            else:
+                msg = "Gonna be rough! We need to win the last match, " \
+                      "and can only lose {} more racks (or {} to tie).".format(required, required + 1)
         return msg
+
     if match_info["Wins"] == 1 and match_info["Losses"] == 1:
-        if match_info["Racks Against"] > match_info["Max For"]:
+        if match_info["Racks Against"] >= match_info["Max For"]:
             msg = "We need to win both matches to win from here."
         elif match_info["Racks For"] > match_info["Max Against"]:
             msg = "We just need to win one of these."
         else:
-            margin = match_info["Max For"] - match_info["Racks Against"]
+            margin = match_info["Max Against"] - match_info["Racks Against"]
             msg = "Gotta win one match, and can only lose {} more racks ({} for a tie).".format(margin - 1, margin)
     else:
         msg = "I'm confused. This situation is hard to figure out?"
@@ -352,9 +378,11 @@ def drilldown():
 @bp.route('/gallery')
 @login_required
 def gallery():
-    p = os.path.join(current_app.config['MOVE_TARGET'])
+    p = os.path.join(current_app.config['STATIC_FILES'])
+    print("Path :", p)
     porn = os.listdir(p)
     porn_list = [current_app.config['STATIC_FILES'] + "/" + file for file in porn]
+    print("Porn :", porn_list)
     return render_template('gallery.html', porn=porn_list)
 
 

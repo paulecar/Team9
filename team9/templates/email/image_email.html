@@ -1,3 +1,10 @@
+<!DOCTYPE html>
+<html>
+<div style="background-color:aliceblue;border-radius:5px">
+    <h1 align="center"><i>You Rack Discipline</i></h1>
+    <h2 align="center"><b>Team Notice</b></h2>
+</div>
+
 <div style="background-color:grey;border-radius:5px">
     <h2 align="center" style="color:white;">
         The next match is on {{"{:%A, %d %b }".format(nextmatch.MatchDate)}} @
@@ -5,7 +12,7 @@
         <br>
         <small>We are playing <code>"{{nextmatch.OpposingTeam}}" </code>
             {% if nextmatch.PlayOff == 'Y' %}
-            in the PLAYOFFS!
+                in the PLAYOFFS!
             {% endif %}
         </small>
     </h2>
@@ -27,11 +34,12 @@
 </div>
 
 <div align="center" style="color:dimgray;">
-    <p><strong>Please <mark>CONFIRM</mark> that you will be able to make it by responding to this email.</strong></p>
+    <p><strong>Please check your <a href="https://www.yourackdiscipline.com/availability">availability</a> is up to date on the website,
+        and <mark>CONFIRM</mark> you will be able to play by responding to this email.</strong></p>
     <hr>
-    <p>Keep your eyes open for any updates, as I will resend this email if the line-up needs to change based on your availability</p>
-    <p>For last week's result, the Bog and the Rankings - check the <a href="https://www.yourackdiscipline.com/index">Home Page</a>
-        - and I encourage those not covered in an awful stench to join the team and have a drink or two.</p>
+    <p>Keep your eyes open for any updates, as I will resend this email should the line-up change if players are unavialable.</p>
+    <p>Last week's result is available on the <a href="https://www.yourackdiscipline.com/results">Results Page</a>.<br>
+        I encourage those not covered in an awful stench to come along and have a drink or two.</p>
 </div>
 
 <hr>

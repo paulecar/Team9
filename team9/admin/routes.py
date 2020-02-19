@@ -328,7 +328,7 @@ def upload():
     form=UploadForm()
     image_file = kvmGet('LATESTPICTURE')
     image_with_path = os.path.join(current_app.config['STATIC_FILES'], image_file)
-
+    print("Path :", image_with_path)
     return render_template('admin/upload.html', title='Upload JPG', form=form, image=image_with_path)
 
 
@@ -359,6 +359,7 @@ def uploader():
         f.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
 
         # Not really sure why I chose to copy or move the file?
+        print("Move :", "mv " + os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
         os.system("mv " + os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
                   + " " + os.path.join(current_app.config['MOVE_TARGET'], filename))
 

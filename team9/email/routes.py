@@ -1,4 +1,4 @@
-from flask import render_template, flash, redirect, url_for
+from flask import current_app, render_template, flash, redirect, url_for
 from flask_login import current_user, login_required
 from team9 import db
 from team9.email import bp, email
@@ -34,13 +34,13 @@ def sendemail():
     nextmatch = Match.query.order_by(Match.MatchDate.asc(), Match.StartTime.asc()).\
         filter(Match.MatchOver == None).first()
 
-    cclist=[]
-    lineup=[]
+    cclist = []
+    lineup = []
     # Walk through the Players and create email cc list and line-up for the text email (only)
     for player in players:
         if player.Player.Active == "Y":
-            if player.User !=None:
-                if player.User.Email != None:
+            if player.User:
+                if player.User.Email:
                     cclist.append(player.User.Email)
             if player.Player.Bogged == 'N':
                 lineup.append(player.Player.FirstName + " " + player.Player.Surname)
@@ -52,15 +52,24 @@ def sendemail():
                  "The Rule of the Bog is in full stench, and our line up is: " + ", ".join(lineup) + "\r\n\n" +
                  "Please CONFIRM that you are able to attend.")
 
+    cclist = ['paulecar@mac.com']
     image_file = kvmGet('LATESTPICTURE')
-    cid="cid:" + image_file
-    email.send_mime_email(cclist, text_body, image_file,
-                     render_template('email/mime_email.html', players=players, nextmatch=nextmatch, captainsMessage=kvmGet('CAPTAINSMESSAGE'),
-                                     cid=cid, image=image_file))
+    # cid = "cid:" + current_app.config['STATIC_FILES'] + "/" + image_file
 
-    # email.send_image_email(cclist, text_body,
-    #                   render_template('email/image_email.html', players=players,
-    #                   nextmatch=nextmatch, captainsMessage=kvmGet('CAPTAINSMESSAGE'), image=image_file))
+    email.send_image_email(cclist, text_body,
+                           render_template('email/image_email.html',
+                                           players=players,
+                                           nextmatch=nextmatch,
+                                           captainsMessage=kvmGet('CAPTAINSMESSAGE'),
+                                           image=image_file))
+
+    # email.send_mime_email(cclist, text_body, image_file,
+    #                       render_template('email/mime_email.html',
+    #                                       players=players,
+    #                                       nextmatch=nextmatch,
+    #                                       captainsMessage=kvmGet('CAPTAINSMESSAGE'),
+    #                                       cid=cid,
+    #                                       image=image_file))
 
     return redirect(url_for('main.index'))
 

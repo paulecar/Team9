@@ -83,7 +83,10 @@
             {% if messages %}
             <ul>
                 {% for message in messages %}
-                <div class="alert alert-info" role="alert">{{ message }}</div>
+                    <div class="alert alert-info alert-dismissable fade in" role="alert">
+                        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                        {{ message }}
+                    </div>
                 {% endfor %}
             </ul>
             {% endif %}
