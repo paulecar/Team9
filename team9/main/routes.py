@@ -136,7 +136,7 @@ def can_we_win(match_info):
             elif match_info["Diff"] > 0:
                 msg = "By no means certain of a win, but at least we are {} racks ahead.".format(match_info["Diff"])
             else:
-                msg = "We're making is hard on ourselves. Behind by {} racks.".format(match_info["Diff"] * -1)
+                msg = "We're making this hard on ourselves. Behind by {} racks.".format(match_info["Diff"] * -1)
         return msg
 
     # Handles tie break progress
@@ -164,10 +164,10 @@ def can_we_win(match_info):
             msg = "Can't lose another rack! Only a draw available."
         else:
             if match_info["Wins"] == 1:
-                msg = "Gonna be rough! We need to win both matches, " \
+                msg = "Gonna be rough! We still need to win the last match, " \
                       "and can only lose {} more racks (or {} to tie).".format(required, required + 1)
             else:
-                msg = "Gonna be rough! We need to win the last match, " \
+                msg = "Gonna be rough! We need to win both matches, " \
                       "and can only lose {} more racks (or {} to tie).".format(required, required + 1)
         return msg
 
